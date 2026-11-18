@@ -3,6 +3,7 @@ import {
   downloadMs,
   FindingList,
   formatBytes,
+  isMenuPdf,
   formatSeconds,
   lowerIsBetter,
   measure,
@@ -155,6 +156,8 @@ function scoreCheck(
 function heavyFiles(ev: Evidence, mobile: LighthouseRun | null): HeavyFile[] {
   const seen = new Map<string, HeavyFile>();
   for (const f of ev.crawl?.heavyFiles ?? []) {
+    // PDF menus are judged by the mobile menu check, with their own finding.
+    if (isMenuPdf(f.url)) continue;
     const isImage = f.contentType.startsWith('image/');
     if (f.bytes >= (isImage ? HEAVY_IMAGE_BYTES : HEAVY_FILE_BYTES)) seen.set(f.url, f);
   }
@@ -172,20 +175,15 @@ function describeHeavyFile(file: HeavyFile, base: string, total: number) {
   const name = fileName(file.url);
   const share = total > 0 ? file.bytes / total : 1;
   const isPdf = file.contentType.includes('pdf') || /\.pdf($|\?)/i.test(file.url);
-  const isMenu = /menu|carta|cardapio|cardápio|speisekarte|carte/i.test(file.url);
 
   if (isPdf) {
     return {
       key: name,
       share,
-      title: isMenu
-        ? `Your menu is a ${size} PDF: on phones it takes about ${wait} to open`
-        : `A ${size} PDF (${name}) takes about ${wait} to open on a phone`,
+      title: `A ${size} PDF (${name}) takes about ${wait} to open on a phone`,
       explanation:
         'Many people give up before it opens, and a PDF is hard to read on a small screen: they have to pinch and zoom.',
-      fix: isMenu
-        ? 'Put the menu on a normal web page (it also helps Google), or at least compress the PDF to under 1 MB.'
-        : 'Compress the PDF (most PDF tools have a “reduce file size” option) or turn it into a web page.',
+      fix: 'Compress the PDF (most PDF tools have a “reduce file size” option) or turn it into a web page.',
       severity: 'high' as const,
       effort: 'quick' as const,
     };

@@ -1,6 +1,17 @@
 import * as cheerio from 'cheerio';
 import type { AreaResult, Check, Evidence, ViewportLayout } from '../types.ts';
-import { FindingList, measure, plural, skipped } from './util.ts';
+import {
+  downloadMs,
+  FindingList,
+  formatBytes,
+  formatSeconds,
+  isMenuPdf,
+  isPdfUrl,
+  MENU_WORDS,
+  measure,
+  plural,
+  skipped,
+} from './util.ts';
 
 /** Minimum target size from WCAG 2.2 (2.5.8). Google recommends 48 px. */
 export const MIN_TAP_PX = 24;
@@ -161,6 +172,44 @@ export function analyzeMobile(ev: Evidence): AreaResult {
       effort: 'moderate',
     });
   }
+
+  // Menu as a PDF: hard to read on a phone and invisible to Google.
+  const menus = new Map<string, number | null>();
+  $('a[href]').each((_, el) => {
+    const href = $(el).attr('href') ?? '';
+    if (isPdfUrl(href) && (MENU_WORDS.test(href) || MENU_WORDS.test($(el).text()))) {
+      menus.set(new URL(href, ev.finalUrl).href, null);
+    }
+  });
+  for (const f of ev.crawl?.heavyFiles ?? []) {
+    if (isMenuPdf(f.url) || menus.has(f.url)) menus.set(f.url, f.bytes);
+  }
+  const biggest = [...menus.values()].reduce<number | null>(
+    (m, b) => (b !== null && b > (m ?? 0) ? b : m),
+    null,
+  );
+  const heavy = biggest !== null && biggest >= 2 * 1024 * 1024;
+  const menu = measure(
+    'mobile.menu',
+    'Menu can be read on a phone',
+    2,
+    menus.size === 0 ? 1 : heavy ? 0 : 0.5,
+    menus.size === 0
+      ? 'No PDF menu was found.'
+      : `The menu is a PDF${biggest !== null ? ` of ${formatBytes(biggest)}` : ''}.`,
+  );
+  checks.push(menu);
+  findings.add(menu, {
+    title:
+      biggest !== null
+        ? `Your menu is a ${formatBytes(biggest)} PDF: on phones it takes about ${formatSeconds(downloadMs(biggest))} to open`
+        : 'Your menu is a PDF, which is hard to read on a phone',
+    explanation:
+      'Many people give up before it opens. On a small screen they then have to pinch and zoom, and Google cannot show your dishes in search.',
+    fix: 'Put the menu on a normal web page (keep the PDF as a download if you like), or at least compress the PDF to under 1 MB.',
+    severity: heavy ? 'high' : 'medium',
+    effort: 'moderate',
+  });
 
   return { area: 'mobile', checks, findings: findings.items };
 }

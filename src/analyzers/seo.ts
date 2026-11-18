@@ -274,7 +274,7 @@ export function analyzeSeo(ev: Evidence): AreaResult {
         : 'Your page title is too long for Google to show',
     explanation:
       'The title is the blue headline people click in Google. It should say who you are, what you do and where.',
-    fix: 'Use something like “Business name – what you sell in Town” in 30–60 characters.',
+    fix: 'Say who you are, what you sell and where in 30 to 60 characters, e.g. “Bistro Verde, Portuguese restaurant in Lisbon”.',
     severity: !title ? 'high' : 'medium',
     effort: 'quick',
   });

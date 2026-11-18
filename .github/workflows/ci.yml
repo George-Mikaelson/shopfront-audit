@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+
+  action:
+    # Runs the action from this repository against the "good" fixture site.
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Serve the fixture site
+        run: |
+          node scripts/serve-fixtures.ts good 4173 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+      - id: audit
+        uses: ./
+        with:
+          url: http://127.0.0.1:4173/
+          name: Bistro Verde
+          address: Rua das Flores 12, 1200-195 Lisboa
+          phone: +351 21 234 5678
+          fail-under: '85'
+          comment: ${{ github.event_name == 'pull_request' }}
+      - run: echo "Score ${{ steps.audit.outputs.score }} (${{ steps.audit.outputs.grade }})"

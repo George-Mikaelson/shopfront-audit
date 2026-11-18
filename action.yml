@@ -1,0 +1,138 @@
+name: shopfront-audit
+description: Audit a website (speed, phones, local SEO, accessibility, name/address/phone) and attach a plain-English report.
+author: George Mikaelson
+branding:
+  icon: check-square
+  color: blue
+
+inputs:
+  url:
+    description: URL to audit, e.g. your deployed site or a preview URL.
+    required: true
+  name:
+    description: Business name to compare with the site.
+    required: false
+    default: ''
+  address:
+    description: Business address to compare with the site.
+    required: false
+    default: ''
+  phone:
+    description: Business phone number to compare with the site.
+    required: false
+    default: ''
+  lighthouse:
+    description: Run Lighthouse speed tests ("true" or "false").
+    required: false
+    default: 'true'
+  max-pages:
+    description: Pages to crawl when checking links.
+    required: false
+    default: '20'
+  fail-under:
+    description: Fail the step when the overall score is below this (0 never fails).
+    required: false
+    default: '0'
+  comment:
+    description: Post the summary as a pull request comment (or a commit comment on push).
+    required: false
+    default: 'true'
+  artifact-name:
+    description: Name of the uploaded report artifact.
+    required: false
+    default: shopfront-report
+  github-token:
+    description: Token used to comment. Needs pull-requests or contents write permission.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  score:
+    description: Overall score, 0-100.
+    value: ${{ steps.audit.outputs.score }}
+  grade:
+    description: Letter grade A-F.
+    value: ${{ steps.audit.outputs.grade }}
+  report-dir:
+    description: Folder with report.html, report.json, report.md and report.pdf.
+    value: ${{ steps.audit.outputs.dir }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+
+    - name: Install shopfront-audit
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        npm ci --no-audit --no-fund
+        npm run build
+        npx playwright install --with-deps chromium
+
+    - name: Run audit
+      id: audit
+      shell: bash
+      env:
+        SFA_URL: ${{ inputs.url }}
+        SFA_NAME: ${{ inputs.name }}
+        SFA_ADDRESS: ${{ inputs.address }}
+        SFA_PHONE: ${{ inputs.phone }}
+        SFA_LIGHTHOUSE: ${{ inputs.lighthouse }}
+        SFA_MAX_PAGES: ${{ inputs.max-pages }}
+        SFA_OUT: ${{ runner.temp }}/shopfront-report
+      run: |
+        args=("$SFA_URL" --out "$SFA_OUT" --format html,json,md,pdf --max-pages "$SFA_MAX_PAGES" --log-format json)
+        [ -n "$SFA_NAME" ] && args+=(--name "$SFA_NAME")
+        [ -n "$SFA_ADDRESS" ] && args+=(--address "$SFA_ADDRESS")
+        [ -n "$SFA_PHONE" ] && args+=(--phone "$SFA_PHONE")
+        [ "$SFA_LIGHTHOUSE" = "false" ] && args+=(--no-lighthouse)
+        node "${{ github.action_path }}/dist/cli.js" "${args[@]}"
+        cat "$SFA_OUT/report.md" >> "$GITHUB_STEP_SUMMARY"
+        node -e "const r=require(process.argv[1]);console.log('score='+(r.overall??0));console.log('grade='+r.grade)" "$SFA_OUT/report.json" >> "$GITHUB_OUTPUT"
+        echo "dir=$SFA_OUT" >> "$GITHUB_OUTPUT"
+
+    - name: Upload report
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.audit.outputs.dir }}
+        retention-days: 30
+
+    - name: Comment
+      if: inputs.comment == 'true'
+      uses: actions/github-script@v7
+      env:
+        REPORT_MD: ${{ steps.audit.outputs.dir }}/report.md
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const body = fs.readFileSync(process.env.REPORT_MD, 'utf8') +
+            `\nThe full HTML and PDF report is in the [\`${process.env.ARTIFACT_NAME}\` artifact](${run}).\n`;
+          const pr = context.payload.pull_request;
+          try {
+            if (pr) {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: pr.number, body });
+            } else {
+              await github.rest.repos.createCommitComment({ ...context.repo, commit_sha: context.sha, body });
+            }
+          } catch (err) {
+            core.warning(`Could not post the comment (${err.message}). Check the token permissions.`);
+          }
+
+    - name: Check threshold
+      if: inputs.fail-under != '0'
+      shell: bash
+      env:
+        SCORE: ${{ steps.audit.outputs.score }}
+        MIN: ${{ inputs.fail-under }}
+      run: |
+        if [ "$SCORE" -lt "$MIN" ]; then
+          echo "::error::Website score $SCORE is below the required $MIN"
+          exit 1
+        fi

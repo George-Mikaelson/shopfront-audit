@@ -43,7 +43,7 @@ describe('analyzePerformance', () => {
     expect(byId(r, 'perf.desktop-score')?.status).toBe('skip');
   });
 
-  it('turns a heavy PDF menu into a concrete waiting time', () => {
+  it('turns a heavy PDF into a concrete waiting time', () => {
     const r = analyzePerformance(
       makeEvidence({
         crawl: {
@@ -52,7 +52,7 @@ describe('analyzePerformance', () => {
           broken: [],
           heavyFiles: [
             {
-              url: 'https://example-bistro.test/files/menu.pdf',
+              url: 'https://example-bistro.test/files/price-list.pdf',
               bytes: 6 * 1024 * 1024,
               contentType: 'application/pdf',
               foundOn: 'https://example-bistro.test/',
@@ -64,7 +64,7 @@ describe('analyzePerformance', () => {
       }),
     );
     const f = r.findings.find((x) => x.checkId === 'perf.heavy-files');
-    expect(f?.title).toBe('Your menu is a 6 MB PDF: on phones it takes about 10 s to open');
+    expect(f?.title).toBe('A 6 MB PDF (price-list.pdf) takes about 10 s to open on a phone');
     expect(byId(r, 'perf.heavy-files')?.status).toBe('fail');
   });
 
@@ -91,6 +91,29 @@ describe('analyzePerformance', () => {
     );
     expect(byId(r, 'perf.mobile-score')?.status).toBe('skip');
     expect(byId(r, 'perf.mobile-score')?.detail).toContain('Chrome crashed');
+    expect(byId(r, 'perf.heavy-files')?.status).toBe('pass');
+  });
+
+  it('leaves PDF menus to the mobile menu check', () => {
+    const r = analyzePerformance(
+      makeEvidence({
+        crawl: {
+          pagesVisited: ['https://example-bistro.test/'],
+          linksChecked: 1,
+          broken: [],
+          heavyFiles: [
+            {
+              url: 'https://example-bistro.test/menu.pdf',
+              bytes: 6 * 1024 * 1024,
+              contentType: 'application/pdf',
+              foundOn: 'https://example-bistro.test/',
+            },
+          ],
+          blockedByRobots: 0,
+          truncated: false,
+        },
+      }),
+    );
     expect(byId(r, 'perf.heavy-files')?.status).toBe('pass');
   });
 });

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>shopfront-audit: website check-ups for small businesses</title>
+    <meta
+      name="description"
+      content="Open-source CLI that audits a small business website and writes a plain-English report: speed, phones, local SEO, accessibility and name/address/phone consistency."
+    />
+    <style>
+      :root {
+        --paper: #f4f6f8;
+        --sheet: #fff;
+        --ink: #1b2440;
+        --ink-2: #48506a;
+        --rule: #d8dde6;
+        --accent: #2343a8;
+        --display:
+          'Bahnschrift', 'DIN Alternate', 'Barlow Semi Condensed', 'Roboto Condensed',
+          'Arial Narrow', sans-serif;
+        --body: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #12151d;
+          --sheet: #1a1e29;
+          --ink: #eceef4;
+          --ink-2: #c3c8d6;
+          --rule: #2d3342;
+          --accent: #8ea8ff;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 17px/1.6 var(--body);
+      }
+      main {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 40px 16px 72px;
+      }
+      h1,
+      h2 {
+        font-family: var(--display);
+        font-stretch: 87.5%;
+        line-height: 1.1;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(2.4rem, 8vw, 4rem);
+        border-bottom: 3px solid var(--ink);
+        padding-bottom: 14px;
+      }
+      h2 {
+        font-size: 1.6rem;
+        margin-top: 48px;
+      }
+      p {
+        max-width: 64ch;
+        color: var(--ink-2);
+      }
+      .lede {
+        font-size: 1.2rem;
+        color: var(--ink);
+        margin-top: 18px;
+      }
+      a {
+        color: var(--accent);
+      }
+      .examples {
+        display: grid;
+        gap: 16px;
+        margin-top: 18px;
+      }
+      @media (min-width: 768px) {
+        .examples {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .example {
+        background: var(--sheet);
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .example img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-bottom: 1px solid var(--rule);
+      }
+      .example div {
+        padding: 14px 16px;
+      }
+      .example h3 {
+        margin: 0 0 4px;
+        font-family: var(--display);
+        font-size: 1.25rem;
+      }
+      .example p {
+        margin: 0 0 8px;
+      }
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 18px;
+      }
+      .links a {
+        display: inline-block;
+        padding: 10px 0;
+      }
+      pre {
+        background: var(--sheet);
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-size: 0.9rem;
+      }
+      footer {
+        margin-top: 56px;
+        border-top: 1px solid var(--rule);
+        padding-top: 14px;
+        font-size: 0.9rem;
+        color: var(--ink-2);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>shopfront-audit</h1>
+      <p class="lede">
+        Point it at a small business website and get a report the owner can read: how fast it is on
+        a phone, whether it fits the screen, whether Google can find the address and opening hours,
+        and what to fix first.
+      </p>
+      <p>
+        It runs Lighthouse, axe-core and a headless browser at three screen sizes, crawls the site
+        for broken links, compares the name, address and phone with a listing you pass in (for
+        example from OpenStreetMap), and writes one HTML file plus JSON and PDF.
+      </p>
+
+      <h2>Example reports</h2>
+      <p>
+        Both sites are fictional test pages that ship with the project. No real business was audited
+        for this page.
+      </p>
+      <div class="examples">
+        <article class="example">
+          <img
+            src="assets/bad-report-1280.png"
+            alt="Top of the report for a neglected restaurant site: grade F"
+            width="1280"
+            height="1500"
+          />
+          <div>
+            <h3>Trattoria Da Mario (neglected site)</h3>
+            <p>
+              No phone layout, a 6 MB PDF menu, broken structured data, a different phone number
+              from its listing.
+            </p>
+            <p class="links">
+              <a href="examples/bad-site.html">Open the HTML report</a
+              ><a href="examples/bad-site.pdf">PDF version</a>
+            </p>
+          </div>
+        </article>
+        <article class="example">
+          <img
+            src="assets/good-report-1280.png"
+            alt="Top of the report for a well-built bistro site: grade A"
+            width="1280"
+            height="1500"
+          />
+          <div>
+            <h3>Bistro Verde (well-built site)</h3>
+            <p>
+              Fast, responsive, complete Restaurant data for Google, details matching its listing.
+            </p>
+            <p class="links">
+              <a href="examples/good-site.html">Open the HTML report</a
+              ><a href="examples/good-site.pdf">PDF version</a>
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <h2>Try it</h2>
+      <pre><code>npm install -g shopfront-audit
+npx playwright install chromium
+
+shopfront-audit https://example.com --name "Bistro Verde" \
+  --address "Rua das Flores 12, Lisboa" --phone "+351 21 234 5678"</code></pre>
+      <p>
+        Batch mode, the GitHub Action and the scoring formula are described in the
+        <a href="https://github.com/George-Mikaelson/shopfront-audit#readme">README</a>.
+      </p>
+
+      <footer>
+        MIT licensed. Made by <a href="https://george-mikaelson.github.io/">George Mikaelson</a>.
+      </footer>
+    </main>
+  </body>
+</html>

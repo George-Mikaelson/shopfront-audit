@@ -8,22 +8,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { audit } from '../../src/audit.ts';
 import { writeReport } from '../../src/reporters/write.ts';
 import type { AuditReport } from '../../src/types.ts';
+import { BAD_BUSINESS, GOOD_BUSINESS } from '../support/businesses.ts';
 import { startSite, type RunningSite } from '../support/fixture-server.ts';
 
 const run = promisify(execFile);
 const lighthouse = process.env.SHOPFRONT_E2E_LIGHTHOUSE !== '0';
 const CLI = fileURLToPath(new URL('../../src/cli.ts', import.meta.url));
-
-export const GOOD_BUSINESS = {
-  name: 'Bistro Verde',
-  address: 'Rua das Flores 12, 1200-195 Lisboa',
-  phone: '+351 21 234 5678',
-};
-export const BAD_BUSINESS = {
-  name: 'Trattoria Da Mario',
-  address: 'Via Roma 45, 00184 Roma',
-  phone: '+39 06 1234 5678',
-};
 
 let good: RunningSite;
 let bad: RunningSite;

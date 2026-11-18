@@ -96,3 +96,17 @@ export function shortUrl(url: string, base?: string): string {
     return url;
   }
 }
+
+/** Words for "menu" in the languages small restaurants around us use. */
+export const MENU_WORDS = /menu|men[uú]|carta|card[aá]pio|speisekarte|carte|menukaart|karta/i;
+
+export const isPdfUrl = (url: string): boolean => {
+  try {
+    return /\.pdf$/i.test(new URL(url, 'http://x').pathname);
+  } catch {
+    return false;
+  }
+};
+
+/** A PDF that looks like the restaurant menu, judged by its address. */
+export const isMenuPdf = (url: string): boolean => isPdfUrl(url) && MENU_WORDS.test(url);

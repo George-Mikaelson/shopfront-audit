@@ -14,6 +14,7 @@ describe('analyzeMobile', () => {
       ['mobile.overflow-tablet', 'pass'],
       ['mobile.tap-targets', 'pass'],
       ['mobile.text-size', 'pass'],
+      ['mobile.menu', 'pass'],
     ]);
   });
 
@@ -88,5 +89,39 @@ describe('analyzeMobile', () => {
     const r = analyzeMobile(makeEvidence({ layouts: [] }));
     expect(byId(r, 'mobile.overflow-phone')?.status).toBe('skip');
     expect(byId(r, 'mobile.viewport')?.status).toBe('pass');
+  });
+
+  it('flags a menu that only exists as a big PDF, with the waiting time', () => {
+    const r = analyzeMobile(
+      makeEvidence({
+        html: '<html><body><a href="/files/Menu-2024.pdf">Our menu</a></body></html>',
+        crawl: {
+          pagesVisited: ['https://example-bistro.test/'],
+          linksChecked: 1,
+          broken: [],
+          heavyFiles: [
+            {
+              url: 'https://example-bistro.test/files/Menu-2024.pdf',
+              bytes: 6 * 1024 * 1024,
+              contentType: 'application/pdf',
+              foundOn: 'https://example-bistro.test/',
+            },
+          ],
+          blockedByRobots: 0,
+          truncated: false,
+        },
+      }),
+    );
+    expect(byId(r, 'mobile.menu')?.score).toBe(0);
+    expect(r.findings.find((f) => f.checkId === 'mobile.menu')?.title).toBe(
+      'Your menu is a 6 MB PDF: on phones it takes about 10 s to open',
+    );
+  });
+
+  it('gives partial credit to a small PDF menu', () => {
+    const r = analyzeMobile(
+      makeEvidence({ html: '<html><body><a href="/carta.pdf">Carta</a></body></html>' }),
+    );
+    expect(byId(r, 'mobile.menu')?.status).toBe('warn');
   });
 });
