@@ -34,8 +34,17 @@ export function analyzeSeo(ev: Evidence): AreaResult {
   const isHttps = ev.finalUrl.startsWith('https:');
   if (ev.isLocal) {
     push(skipped('seo.https', 'Secure connection (HTTPS)', 3, 'Skipped: local test address.'));
-    push(skipped('seo.http-redirect', 'Insecure address forwards to HTTPS', 2, 'Skipped: local test address.'));
-    push(skipped('seo.certificate', 'Valid security certificate', 2, 'Skipped: local test address.'));
+    push(
+      skipped(
+        'seo.http-redirect',
+        'Insecure address forwards to HTTPS',
+        2,
+        'Skipped: local test address.',
+      ),
+    );
+    push(
+      skipped('seo.certificate', 'Valid security certificate', 2, 'Skipped: local test address.'),
+    );
   } else {
     const https = push(
       measure(
@@ -56,7 +65,14 @@ export function analyzeSeo(ev: Evidence): AreaResult {
     });
 
     if (ev.httpUpgrade === null) {
-      push(skipped('seo.http-redirect', 'Insecure address forwards to HTTPS', 2, 'Could not test the http:// address.'));
+      push(
+        skipped(
+          'seo.http-redirect',
+          'Insecure address forwards to HTTPS',
+          2,
+          'Could not test the http:// address.',
+        ),
+      );
     } else {
       const up = push(
         measure(
@@ -82,10 +98,23 @@ export function analyzeSeo(ev: Evidence): AreaResult {
     }
 
     if (ev.tls === null) {
-      push(skipped('seo.certificate', 'Valid security certificate', 2, 'No certificate to check (no HTTPS).'));
+      push(
+        skipped(
+          'seo.certificate',
+          'Valid security certificate',
+          2,
+          'No certificate to check (no HTTPS).',
+        ),
+      );
     } else if (!ev.tls.valid) {
       const cert = push(
-        measure('seo.certificate', 'Valid security certificate', 2, 0, `The certificate is not valid (${ev.tls.error ?? 'unknown error'}).`),
+        measure(
+          'seo.certificate',
+          'Valid security certificate',
+          2,
+          0,
+          `The certificate is not valid (${ev.tls.error ?? 'unknown error'}).`,
+        ),
       );
       findings.add(cert, {
         title: 'Your security certificate is broken',
@@ -123,7 +152,9 @@ export function analyzeSeo(ev: Evidence): AreaResult {
       'Few redirects before the page loads',
       1,
       hops <= 1 ? 1 : hops === 2 ? 0.5 : 0,
-      hops === 0 ? 'The address loads directly.' : `The address goes through ${plural(hops, 'redirect')}.`,
+      hops === 0
+        ? 'The address loads directly.'
+        : `The address goes through ${plural(hops, 'redirect')}.`,
     ),
   );
   findings.add(redirects, {
@@ -148,7 +179,9 @@ export function analyzeSeo(ev: Evidence): AreaResult {
       'Search engines are allowed to list the page',
       3,
       noindex ? 0 : 1,
-      noindex ? 'The page tells search engines not to list it (noindex).' : 'Nothing blocks search engines from listing the page.',
+      noindex
+        ? 'The page tells search engines not to list it (noindex).'
+        : 'Nothing blocks search engines from listing the page.',
     ),
   );
   findings.add(indexable, {
@@ -183,14 +216,16 @@ export function analyzeSeo(ev: Evidence): AreaResult {
     robotsBlocked
       ? {
           title: 'Your robots.txt blocks Google from your whole site',
-          explanation: 'Search engines are told to stay away, so your pages drop out of search results.',
+          explanation:
+            'Search engines are told to stay away, so your pages drop out of search results.',
           fix: 'Change robots.txt to allow crawling (remove “Disallow: /”).',
           severity: 'critical',
           effort: 'quick',
         }
       : {
           title: 'There is no robots.txt file',
-          explanation: 'Not serious on its own, but it is the usual place to tell Google where your sitemap is.',
+          explanation:
+            'Not serious on its own, but it is the usual place to tell Google where your sitemap is.',
           fix: 'Add a robots.txt with “User-agent: *”, “Allow: /” and a Sitemap line.',
           severity: 'low',
           effort: 'quick',
@@ -210,7 +245,8 @@ export function analyzeSeo(ev: Evidence): AreaResult {
   );
   findings.add(sitemap, {
     title: 'There is no sitemap for Google',
-    explanation: 'A sitemap helps Google discover all your pages, such as the menu or opening hours.',
+    explanation:
+      'A sitemap helps Google discover all your pages, such as the menu or opening hours.',
     fix: 'Generate a sitemap.xml (most site builders have a setting) and submit it in Google Search Console.',
     severity: 'low',
     effort: 'quick',
@@ -244,18 +280,26 @@ export function analyzeSeo(ev: Evidence): AreaResult {
   });
 
   const description = ($('meta[name="description" i]').attr('content') ?? '').trim();
-  const descScore = !description ? 0 : description.length < 50 || description.length > 160 ? 0.5 : 1;
+  const descScore = !description
+    ? 0
+    : description.length < 50 || description.length > 160
+      ? 0.5
+      : 1;
   const desc = push(
     measure(
       'seo.description',
       'Search result description',
       2,
       descScore,
-      description ? `The description is ${description.length} characters long.` : 'There is no meta description.',
+      description
+        ? `The description is ${description.length} characters long.`
+        : 'There is no meta description.',
     ),
   );
   findings.add(desc, {
-    title: description ? 'Your Google description is the wrong length' : 'Google has to guess what to show under your name',
+    title: description
+      ? 'Your Google description is the wrong length'
+      : 'Google has to guess what to show under your name',
     explanation:
       'Without a description, Google picks random text from the page for your search result, often a cookie notice or menu item.',
     fix: 'Write a 120–155 character description saying what you offer, where, and how to book or order.',
@@ -270,12 +314,15 @@ export function analyzeSeo(ev: Evidence): AreaResult {
       'One main heading',
       1,
       h1Count === 1 ? 1 : h1Count > 1 ? 0.7 : 0,
-      h1Count === 1 ? 'The page has one main heading.' : `The page has ${plural(h1Count, 'main heading')}.`,
+      h1Count === 1
+        ? 'The page has one main heading.'
+        : `The page has ${plural(h1Count, 'main heading')}.`,
     ),
   );
   findings.add(h1, {
     title: h1Count === 0 ? 'The page has no main heading' : `The page has ${h1Count} main headings`,
-    explanation: 'Search engines and screen readers use the main heading to understand what the page is about.',
+    explanation:
+      'Search engines and screen readers use the main heading to understand what the page is about.',
     fix: 'Use exactly one H1 heading with your business name and what you do.',
     severity: 'low',
     effort: 'quick',
@@ -289,7 +336,9 @@ export function analyzeSeo(ev: Evidence): AreaResult {
       'Link preview for WhatsApp and social media',
       1,
       (og.length - ogMissing.length) / og.length,
-      ogMissing.length === 0 ? 'Open Graph tags are complete.' : `Missing: ${ogMissing.join(', ')}.`,
+      ogMissing.length === 0
+        ? 'Open Graph tags are complete.'
+        : `Missing: ${ogMissing.join(', ')}.`,
     ),
   );
   findings.add(ogCheck, {
@@ -310,7 +359,10 @@ export function analyzeSeo(ev: Evidence): AreaResult {
     const v = validateLocalBusiness(business);
     const reqScore = 1 - v.missingRequired.length / 4;
     const recCount = v.missingRecommended.length;
-    const recTotal = v.type && /Restaurant|Food|Cafe|Bakery|Bar|Brewery|Winery|IceCream|Distillery/.test(v.type) ? 6 : 4;
+    const recTotal =
+      v.type && /Restaurant|Food|Cafe|Bakery|Bar|Brewery|Winery|IceCream|Distillery/.test(v.type)
+        ? 6
+        : 4;
     const score = 0.3 + 0.5 * reqScore + 0.2 * (1 - recCount / recTotal);
     const sd = push(
       measure(
@@ -347,7 +399,9 @@ export function analyzeSeo(ev: Evidence): AreaResult {
       ),
     );
     findings.add(sd, {
-      title: broken ? 'Your business data for Google is broken' : 'Google can’t read your opening hours, address or phone',
+      title: broken
+        ? 'Your business data for Google is broken'
+        : 'Google can’t read your opening hours, address or phone',
       explanation: broken
         ? 'The page tries to describe your business to Google, but the code has a typo, so Google ignores all of it.'
         : 'Structured data is a small hidden block that tells Google your address, hours and phone, so they appear directly in search and Maps.',

@@ -7,10 +7,9 @@ const byId = (r: AreaResult, id: string) => r.checks.find((c) => c.id === id);
 
 describe('phone helpers', () => {
   it('extracts phone-like numbers from text and ignores short numbers and dates', () => {
-    expect(extractPhones('Call +351 21 234 5678 or (21) 999-0000. Open 12:00-23:00, since 2019.')).toEqual([
-      '351212345678',
-      '219990000',
-    ]);
+    expect(
+      extractPhones('Call +351 21 234 5678 or (21) 999-0000. Open 12:00-23:00, since 2019.'),
+    ).toEqual(['351212345678', '219990000']);
   });
 
   it('matches numbers with and without the country prefix', () => {
@@ -27,7 +26,11 @@ describe('normalizeText', () => {
 });
 
 describe('analyzeNap', () => {
-  const business = { name: 'Bistro Verde', address: 'Rua das Flores 12, 1200-195 Lisboa', phone: '+351 21 234 5678' };
+  const business = {
+    name: 'Bistro Verde',
+    address: 'Rua das Flores 12, 1200-195 Lisboa',
+    phone: '+351 21 234 5678',
+  };
 
   it('is skipped without business details', () => {
     const r = analyzeNap(makeEvidence(), undefined);
@@ -46,7 +49,10 @@ describe('analyzeNap', () => {
 
   it('reports a different phone number in words a shop owner understands', () => {
     const r = analyzeNap(
-      makeEvidence({ html: fixture('bad-restaurant.html'), text: 'Welcome\nOur food\nCall us: 21 999 0000\nMENU' }),
+      makeEvidence({
+        html: fixture('bad-restaurant.html'),
+        text: 'Welcome\nOur food\nCall us: 21 999 0000\nMENU',
+      }),
       business,
     );
     expect(byId(r, 'nap.phone')?.status).toBe('fail');
@@ -66,14 +72,20 @@ describe('analyzeNap', () => {
 
   it('gives partial credit to a partly matching address', () => {
     const r = analyzeNap(
-      makeEvidence({ html: '<html><body></body></html>', text: 'Bistro Verde, Rua das Flores, Lisboa' }),
+      makeEvidence({
+        html: '<html><body></body></html>',
+        text: 'Bistro Verde, Rua das Flores, Lisboa',
+      }),
       business,
     );
     expect(byId(r, 'nap.address')?.status).toBe('warn');
   });
 
   it('fails a missing business name', () => {
-    const r = analyzeNap(makeEvidence({ html: '<html><title>Home</title></html>', text: 'Welcome' }), business);
+    const r = analyzeNap(
+      makeEvidence({ html: '<html><title>Home</title></html>', text: 'Welcome' }),
+      business,
+    );
     expect(byId(r, 'nap.name')?.status).toBe('fail');
     expect(byId(r, 'nap.phone')?.detail).toMatch(/no phone number/i);
   });

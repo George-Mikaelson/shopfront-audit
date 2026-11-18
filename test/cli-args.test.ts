@@ -3,7 +3,17 @@ import { parseCliArgs } from '../src/cli-args.ts';
 
 describe('parseCliArgs', () => {
   it('parses a single-site audit with business details', () => {
-    const a = parseCliArgs(['audit', 'bistro.test', '--name', 'Bistro Verde', '--phone', '+351 1', '--format', 'html,md', '--no-lighthouse']);
+    const a = parseCliArgs([
+      'audit',
+      'bistro.test',
+      '--name',
+      'Bistro Verde',
+      '--phone',
+      '+351 1',
+      '--format',
+      'html,md',
+      '--no-lighthouse',
+    ]);
     expect(a).toMatchObject({
       url: 'bistro.test',
       business: { name: 'Bistro Verde', phone: '+351 1' },
@@ -15,8 +25,25 @@ describe('parseCliArgs', () => {
   });
 
   it('parses batch mode options', () => {
-    const a = parseCliArgs(['--csv', 'leads.csv', '--out', 'reports', '--concurrency', '3', '--retries', '0', '--cache-hours', '0']);
-    expect(a).toMatchObject({ csv: 'leads.csv', out: 'reports', concurrency: 3, retries: 0, cacheHours: 0 });
+    const a = parseCliArgs([
+      '--csv',
+      'leads.csv',
+      '--out',
+      'reports',
+      '--concurrency',
+      '3',
+      '--retries',
+      '0',
+      '--cache-hours',
+      '0',
+    ]);
+    expect(a).toMatchObject({
+      csv: 'leads.csv',
+      out: 'reports',
+      concurrency: 3,
+      retries: 0,
+      cacheHours: 0,
+    });
   });
 
   it.each([

@@ -123,7 +123,9 @@ describe('createMutex', () => {
 
 describe('parseCsv', () => {
   it('parses quoted fields, escaped quotes, CRLF and a BOM into header-keyed rows', () => {
-    const csv = '﻿name,website,note\r\n"Café ""Sol""",https://sol.test,"a, b"\r\nPão,,\r\n';
+    const csv =
+      String.fromCharCode(0xfeff) +
+      'name,website,note\r\n"Café ""Sol""",https://sol.test,"a, b"\r\nPão,,\r\n';
     expect(parseCsv(csv)).toEqual([
       { name: 'Café "Sol"', website: 'https://sol.test', note: 'a, b' },
       { name: 'Pão', website: '', note: '' },
@@ -180,7 +182,12 @@ describe('FileCache', () => {
 describe('createLogger', () => {
   it('writes one JSON object per line with level, message and fields', () => {
     const lines: string[] = [];
-    const log = createLogger({ format: 'json', level: 'info', write: (l) => lines.push(l), now: () => new Date(0) });
+    const log = createLogger({
+      format: 'json',
+      level: 'info',
+      write: (l) => lines.push(l),
+      now: () => new Date(0),
+    });
     log.debug('hidden');
     log.info('audit done', { url: 'https://a.test/', score: 80 });
     expect(lines).toHaveLength(1);
@@ -195,7 +202,9 @@ describe('createLogger', () => {
 
   it('adds bound fields with child()', () => {
     const lines: string[] = [];
-    const log = createLogger({ format: 'json', level: 'debug', write: (l) => lines.push(l) }).child({ site: 'x' });
+    const log = createLogger({ format: 'json', level: 'debug', write: (l) => lines.push(l) }).child(
+      { site: 'x' },
+    );
     log.warn('slow');
     expect(JSON.parse(lines[0] ?? '')).toMatchObject({ level: 'warn', site: 'x', msg: 'slow' });
   });

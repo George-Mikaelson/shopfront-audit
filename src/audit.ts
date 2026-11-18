@@ -32,7 +32,12 @@ export function analyze(evidence: Evidence, business?: BusinessInfo): AreaResult
 /** Scores analyzed evidence and assembles the report. Pure. */
 export function buildReport(
   evidence: Evidence,
-  input: { business?: BusinessInfo; weights?: AreaWeights; startedAt?: Date; durationMs?: number } = {},
+  input: {
+    business?: BusinessInfo;
+    weights?: AreaWeights;
+    startedAt?: Date;
+    durationMs?: number;
+  } = {},
 ): AuditReport {
   const scored = scoreReport(analyze(evidence, input.business), input.weights ?? AREA_WEIGHTS);
   return {
@@ -52,7 +57,11 @@ export function buildReport(
       status: evidence.status,
       httpUpgrade: evidence.httpUpgrade,
       tls: evidence.tls,
-      robots: { url: evidence.robots.url, status: evidence.robots.status, found: evidence.robots.found },
+      robots: {
+        url: evidence.robots.url,
+        status: evidence.robots.status,
+        found: evidence.robots.found,
+      },
       sitemap: {
         url: evidence.sitemap.url,
         status: evidence.sitemap.status,

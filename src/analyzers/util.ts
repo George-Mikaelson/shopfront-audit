@@ -9,7 +9,14 @@ export function measure(
   detail: string,
 ): Check {
   const s = Math.min(1, Math.max(0, score));
-  return { id, title, weight, score: s, status: s >= 0.9 ? 'pass' : s >= 0.5 ? 'warn' : 'fail', detail };
+  return {
+    id,
+    title,
+    weight,
+    score: s,
+    status: s >= 0.9 ? 'pass' : s >= 0.5 ? 'warn' : 'fail',
+    detail,
+  };
 }
 
 export function skipped(id: string, title: string, weight: number, detail: string): Check {

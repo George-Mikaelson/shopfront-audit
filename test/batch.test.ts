@@ -22,7 +22,11 @@ describe('leadsFromCsv', () => {
       {
         id: '1',
         url: 'https://bistro.test/',
-        business: { name: 'Bistro Verde', phone: '+351 21 234 5678', address: 'Rua das Flores 12, Lisboa' },
+        business: {
+          name: 'Bistro Verde',
+          phone: '+351 21 234 5678',
+          address: 'Rua das Flores 12, Lisboa',
+        },
       },
     ]);
     expect(leadsFromCsv(osm).leads[0]).toEqual({
@@ -41,7 +45,11 @@ describe('leadsFromCsv', () => {
     const csv = 'name,website\nA,\nB,https://b.test\nC,https://b.test/\nD,not a url with spaces\n';
     const { leads, skipped } = leadsFromCsv(csv);
     expect(leads.map((l) => l.business.name)).toEqual(['B']);
-    expect(skipped.map((s) => s.reason)).toEqual(['no website', 'duplicate of row 3', 'invalid URL']);
+    expect(skipped.map((s) => s.reason)).toEqual([
+      'no website',
+      'duplicate of row 3',
+      'invalid URL',
+    ]);
   });
 });
 
@@ -51,7 +59,8 @@ describe('runBatch', () => {
     if (dir) rmSync(dir, { recursive: true, force: true });
   });
 
-  const fakeReport = (url: string) => buildReport(makeEvidence({ requestedUrl: url, finalUrl: url }));
+  const fakeReport = (url: string) =>
+    buildReport(makeEvidence({ requestedUrl: url, finalUrl: url }));
   const quietLog = createLogger({ level: 'silent' });
   const leads = [
     { id: 'a', url: 'https://a.test/', business: { name: 'A' } },

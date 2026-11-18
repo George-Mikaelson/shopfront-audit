@@ -14,7 +14,9 @@ const violation = (id: string, impact: AxeViolation['impact'], nodeCount = 1): A
 });
 
 const withViolations = (...violations: AxeViolation[]) =>
-  analyzeAccessibility(makeEvidence({ axe: { violations, passes: 30, incomplete: 0, axeVersion: '4.14.1' } }));
+  analyzeAccessibility(
+    makeEvidence({ axe: { violations, passes: 30, incomplete: 0, axeVersion: '4.14.1' } }),
+  );
 
 describe('analyzeAccessibility', () => {
   it('passes when axe finds nothing', () => {
@@ -23,7 +25,10 @@ describe('analyzeAccessibility', () => {
   });
 
   it('groups violations by impact and fails any critical or serious group', () => {
-    const r = withViolations(violation('image-alt', 'critical', 12), violation('region', 'moderate'));
+    const r = withViolations(
+      violation('image-alt', 'critical', 12),
+      violation('region', 'moderate'),
+    );
     const critical = r.checks.find((c) => c.id === 'a11y.critical');
     expect(critical?.status).toBe('fail');
     // burden = 1 + log10(12) ≈ 2.08 -> 1 / 3.08
@@ -43,7 +48,10 @@ describe('analyzeAccessibility', () => {
   });
 
   it('splits a group’s lost points across its rules by burden', () => {
-    const r = withViolations(violation('color-contrast', 'serious', 10), violation('link-name', 'serious', 1));
+    const r = withViolations(
+      violation('color-contrast', 'serious', 10),
+      violation('link-name', 'serious', 1),
+    );
     const shares = r.findings.map((f) => f.share);
     expect(shares[0]).toBeCloseTo(2 / 3);
     expect(shares[1]).toBeCloseTo(1 / 3);

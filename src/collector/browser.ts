@@ -71,9 +71,13 @@ function canStart(path: string): Promise<boolean> {
       }, 500).unref();
     };
     try {
-      const child = spawn(path, ['--headless=new', '--no-first-run', `--user-data-dir=${profile}`, 'about:blank'], {
-        stdio: 'ignore',
-      });
+      const child = spawn(
+        path,
+        ['--headless=new', '--no-first-run', `--user-data-dir=${profile}`, 'about:blank'],
+        {
+          stdio: 'ignore',
+        },
+      );
       child.once('error', () => {
         finish(false);
       });

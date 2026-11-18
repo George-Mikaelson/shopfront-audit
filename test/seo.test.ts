@@ -8,7 +8,8 @@ const byId = (r: AreaResult, id: string) => {
   if (!c) throw new Error(`no check ${id}`);
   return c;
 };
-const findingFor = (r: AreaResult, checkId: string) => r.findings.filter((f) => f.checkId === checkId);
+const findingFor = (r: AreaResult, checkId: string) =>
+  r.findings.filter((f) => f.checkId === checkId);
 
 describe('analyzeSeo on a healthy site', () => {
   const result = analyzeSeo(makeEvidence());
@@ -95,7 +96,14 @@ describe('analyzeSeo on a neglected site', () => {
 
 describe('analyzeSeo edge cases', () => {
   it('skips HTTPS checks on a local address', () => {
-    const r = analyzeSeo(makeEvidence({ isLocal: true, finalUrl: 'http://127.0.0.1:4000/', tls: null, httpUpgrade: null }));
+    const r = analyzeSeo(
+      makeEvidence({
+        isLocal: true,
+        finalUrl: 'http://127.0.0.1:4000/',
+        tls: null,
+        httpUpgrade: null,
+      }),
+    );
     expect(byId(r, 'seo.https').status).toBe('skip');
     expect(byId(r, 'seo.http-redirect').status).toBe('skip');
     expect(byId(r, 'seo.certificate').status).toBe('skip');
@@ -114,7 +122,9 @@ describe('analyzeSeo edge cases', () => {
 
   it('fails a robots.txt that blocks every crawler', () => {
     const r = analyzeSeo(
-      makeEvidence({ robots: { url: 'x', status: 200, found: true, body: 'User-agent: *\nDisallow: /' } }),
+      makeEvidence({
+        robots: { url: 'x', status: 200, found: true, body: 'User-agent: *\nDisallow: /' },
+      }),
     );
     expect(byId(r, 'seo.robots').status).toBe('fail');
     expect(findingFor(r, 'seo.robots')[0]?.severity).toBe('critical');

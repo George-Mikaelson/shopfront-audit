@@ -71,7 +71,11 @@ describe('analyzePerformance', () => {
   it('merges oversized images reported by Lighthouse with crawled files', () => {
     const mobile = run('mobile', {
       largestResources: [
-        { url: 'https://example-bistro.test/img/hero.png', bytes: 5_800_000, resourceType: 'Image' },
+        {
+          url: 'https://example-bistro.test/img/hero.png',
+          bytes: 5_800_000,
+          resourceType: 'Image',
+        },
         { url: 'https://example-bistro.test/app.js', bytes: 90_000, resourceType: 'Script' },
       ],
     });

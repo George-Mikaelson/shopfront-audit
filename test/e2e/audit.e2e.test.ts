@@ -14,8 +14,16 @@ const run = promisify(execFile);
 const lighthouse = process.env.SHOPFRONT_E2E_LIGHTHOUSE !== '0';
 const CLI = fileURLToPath(new URL('../../src/cli.ts', import.meta.url));
 
-export const GOOD_BUSINESS = { name: 'Bistro Verde', address: 'Rua das Flores 12, 1200-195 Lisboa', phone: '+351 21 234 5678' };
-export const BAD_BUSINESS = { name: 'Trattoria Da Mario', address: 'Via Roma 45, 00184 Roma', phone: '+39 06 1234 5678' };
+export const GOOD_BUSINESS = {
+  name: 'Bistro Verde',
+  address: 'Rua das Flores 12, 1200-195 Lisboa',
+  phone: '+351 21 234 5678',
+};
+export const BAD_BUSINESS = {
+  name: 'Trattoria Da Mario',
+  address: 'Via Roma 45, 00184 Roma',
+  phone: '+39 06 1234 5678',
+};
 
 let good: RunningSite;
 let bad: RunningSite;
@@ -45,7 +53,9 @@ describe('the good site', () => {
   });
 
   it('has no serious findings', () => {
-    expect(goodReport.findings.filter((f) => f.severity === 'critical' || f.severity === 'high')).toEqual([]);
+    expect(
+      goodReport.findings.filter((f) => f.severity === 'critical' || f.severity === 'high'),
+    ).toEqual([]);
   });
 
   it('was measured at three widths with screenshots', () => {
@@ -67,7 +77,9 @@ describe('the bad site', () => {
   });
 
   it('catches the phone layout problems', () => {
-    expect(ids(badReport)).toEqual(expect.arrayContaining(['mobile.viewport', 'mobile.overflow-phone', 'mobile.text-size']));
+    expect(ids(badReport)).toEqual(
+      expect.arrayContaining(['mobile.viewport', 'mobile.overflow-phone', 'mobile.text-size']),
+    );
     const phone = badReport.evidence.layouts.find((l) => l.width === 375);
     expect(phone?.layoutWidth).toBe(980);
     expect(phone?.scale).toBeLessThan(0.5);
@@ -75,7 +87,14 @@ describe('the bad site', () => {
 
   it('catches search and listing problems', () => {
     expect(ids(badReport)).toEqual(
-      expect.arrayContaining(['seo.title', 'seo.description', 'seo.structured-data', 'seo.broken-links', 'nap.phone', 'nap.address']),
+      expect.arrayContaining([
+        'seo.title',
+        'seo.description',
+        'seo.structured-data',
+        'seo.broken-links',
+        'nap.phone',
+        'nap.address',
+      ]),
     );
     expect(badReport.evidence.crawl?.broken).toHaveLength(5);
   });
@@ -128,7 +147,20 @@ describe('the CLI', () => {
     const reports = join(out, 'reports');
     const { stdout, stderr } = await run(
       process.execPath,
-      [CLI, '--csv', csv, '--out', reports, '--no-lighthouse', '--format', 'html,json', '--log-format', 'json', '--cache-hours', '0'],
+      [
+        CLI,
+        '--csv',
+        csv,
+        '--out',
+        reports,
+        '--no-lighthouse',
+        '--format',
+        'html,json',
+        '--log-format',
+        'json',
+        '--cache-hours',
+        '0',
+      ],
       { timeout: 200_000 },
     );
     expect(stdout).toContain('2 of 2 sites audited');
@@ -146,7 +178,19 @@ describe('the CLI', () => {
   it('fails the build when the score is under --fail-under', async () => {
     const err = await run(
       process.execPath,
-      [CLI, bad.url, '--out', join(out, 'ci'), '--no-lighthouse', '--format', 'md', '--fail-under', '80', '--log-level', 'silent'],
+      [
+        CLI,
+        bad.url,
+        '--out',
+        join(out, 'ci'),
+        '--no-lighthouse',
+        '--format',
+        'md',
+        '--fail-under',
+        '80',
+        '--log-level',
+        'silent',
+      ],
       { timeout: 120_000 },
     ).catch((e: unknown) => e as { code: number; stdout: string });
     expect((err as { code: number }).code).toBe(2);

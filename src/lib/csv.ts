@@ -1,9 +1,11 @@
+const BOM = String.fromCharCode(0xfeff);
+
 /**
  * RFC 4180 CSV parser returning one object per row keyed by the header.
  * Handles quotes, escaped quotes, CRLF, newlines inside quotes and a UTF-8 BOM.
  */
 export function parseCsv(input: string): Record<string, string>[] {
-  const rows = parseRows(input.replace(/^﻿/, ''));
+  const rows = parseRows(input.startsWith(BOM) ? input.slice(1) : input);
   const header = rows.shift()?.map((h) => h.trim()) ?? [];
   return rows
     .filter((r) => r.some((cell) => cell.trim() !== ''))
@@ -49,7 +51,7 @@ function parseRows(s: string): string[][] {
 }
 
 /** Quotes a value for CSV output when needed. */
-export function csvCell(value: unknown): string {
+export function csvCell(value: string | number | null | undefined): string {
   const s = value === null || value === undefined ? '' : String(value);
   return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }

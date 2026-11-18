@@ -89,7 +89,9 @@ export function scoreReport(
   const overall =
     totalWeight === 0
       ? null
-      : Math.round(scored.reduce((sum, a) => sum + a.score * (weights[a.area] ?? 0), 0) / totalWeight);
+      : Math.round(
+          scored.reduce((sum, a) => sum + a.score * (weights[a.area] ?? 0), 0) / totalWeight,
+        );
 
   const findings: RankedFinding[] = [];
   for (const area of scored) {

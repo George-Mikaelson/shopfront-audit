@@ -66,8 +66,16 @@ describe('crawlSite', () => {
   it('finds broken internal links and where they are', async () => {
     const r = await crawlSite(bad.url, { maxPages: 10 });
     const broken = r.broken.map((b) => new URL(b.url).pathname).sort();
-    expect(broken).toEqual(['/about.html', '/booking.html', '/gallery.html', '/privacy.html', '/staff.html']);
-    expect(r.broken.find((b) => b.url.endsWith('/staff.html'))?.foundOn).toBe(`${bad.url}contact.html`);
+    expect(broken).toEqual([
+      '/about.html',
+      '/booking.html',
+      '/gallery.html',
+      '/privacy.html',
+      '/staff.html',
+    ]);
+    expect(r.broken.find((b) => b.url.endsWith('/staff.html'))?.foundOn).toBe(
+      `${bad.url}contact.html`,
+    );
   });
 
   it('measures heavy files without downloading them', async () => {

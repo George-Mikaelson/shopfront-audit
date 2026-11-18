@@ -16,7 +16,8 @@ export function analyzeMobile(ev: Evidence): AreaResult {
   const viewport = ($('meta[name="viewport" i]').attr('content') ?? '').toLowerCase();
   const hasDeviceWidth = /width\s*=\s*device-width/.test(viewport);
   const maxScale = /maximum-scale\s*=\s*([\d.]+)/.exec(viewport)?.[1];
-  const zoomBlocked = /user-scalable\s*=\s*(no|0)/.test(viewport) || (maxScale !== undefined && Number(maxScale) < 2);
+  const zoomBlocked =
+    /user-scalable\s*=\s*(no|0)/.test(viewport) || (maxScale !== undefined && Number(maxScale) < 2);
   const vpScore = !hasDeviceWidth ? 0 : zoomBlocked ? 0.6 : 1;
   const vp = measure(
     'mobile.viewport',
@@ -57,9 +58,21 @@ export function analyzeMobile(ev: Evidence): AreaResult {
   const unmeasured = 'The page could not be measured in a browser.';
 
   if (!phone) {
-    checks.push(skipped('mobile.overflow-phone', 'Fits a phone screen without sideways scrolling', 3, unmeasured));
+    checks.push(
+      skipped(
+        'mobile.overflow-phone',
+        'Fits a phone screen without sideways scrolling',
+        3,
+        unmeasured,
+      ),
+    );
   } else {
-    const c = overflowCheck('mobile.overflow-phone', 'Fits a phone screen without sideways scrolling', 3, phone);
+    const c = overflowCheck(
+      'mobile.overflow-phone',
+      'Fits a phone screen without sideways scrolling',
+      3,
+      phone,
+    );
     checks.push(c);
     findings.add(c, {
       title: 'On phones, people have to scroll sideways to read your page',
@@ -85,7 +98,14 @@ export function analyzeMobile(ev: Evidence): AreaResult {
   }
 
   if (!phone || phone.tapTargets.total === 0) {
-    checks.push(skipped('mobile.tap-targets', 'Buttons and links are big enough to tap', 2, phone ? 'No links or buttons found.' : unmeasured));
+    checks.push(
+      skipped(
+        'mobile.tap-targets',
+        'Buttons and links are big enough to tap',
+        2,
+        phone ? 'No links or buttons found.' : unmeasured,
+      ),
+    );
   } else {
     const { total, small } = phone.tapTargets;
     const ratio = small.length / total;
@@ -111,7 +131,14 @@ export function analyzeMobile(ev: Evidence): AreaResult {
   }
 
   if (!phone || phone.text.totalChars === 0) {
-    checks.push(skipped('mobile.text-size', 'Text is readable without zooming', 2, phone ? 'No text found.' : unmeasured));
+    checks.push(
+      skipped(
+        'mobile.text-size',
+        'Text is readable without zooming',
+        2,
+        phone ? 'No text found.' : unmeasured,
+      ),
+    );
   } else {
     const ratio = phone.text.smallChars / phone.text.totalChars;
     const pct = Math.round(ratio * 100);

@@ -1,5 +1,14 @@
 import { formatBytes, formatSeconds, shortUrl } from '../analyzers/util.ts';
-import type { AreaId, AuditReport, Check, Effort, Grade, RankedFinding, ScoredArea, Screenshot } from '../types.ts';
+import type {
+  AreaId,
+  AuditReport,
+  Check,
+  Effort,
+  Grade,
+  RankedFinding,
+  ScoredArea,
+  Screenshot,
+} from '../types.ts';
 import { barList, bullet, escapeHtml as e, meter, statusForScore } from './svg.ts';
 
 export interface HtmlOptions {
@@ -61,7 +70,12 @@ const icon = (s: Check['status']) =>
 export function renderHtml(report: AuditReport, opts: HtmlOptions = {}): string {
   const name = report.business?.name?.trim() || hostOf(report.finalUrl);
   const date = new Date(report.auditedAt);
-  const dateText = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  const dateText = date.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
   const top = report.findings.slice(0, opts.topFixes ?? 5);
   const rest = report.findings.slice(top.length);
 
@@ -139,10 +153,13 @@ function hostOf(url: string): string {
 function summarySentence(r: AuditReport): string {
   const problems = r.findings.length;
   if (problems === 0) return 'We found nothing that needs fixing.';
-  const worst = [...r.areas].filter((a) => a.score !== null).sort((a, b) => (a.score ?? 0) - (b.score ?? 0))[0];
+  const worst = [...r.areas]
+    .filter((a) => a.score !== null)
+    .sort((a, b) => (a.score ?? 0) - (b.score ?? 0))[0];
   const quick = r.findings.filter((f) => f.effort === 'quick').length;
   const parts = [`We found ${problems} ${problems === 1 ? 'thing' : 'things'} to fix`];
-  if (worst && (worst.score ?? 100) < 75) parts.push(`the weakest area is ${AREA_NAMES[worst.area].toLowerCase()}`);
+  if (worst && (worst.score ?? 100) < 75)
+    parts.push(`the weakest area is ${AREA_NAMES[worst.area].toLowerCase()}`);
   let s = `${parts.join('; ')}.`;
   if (quick > 0) s += ` ${quick} of them ${quick === 1 ? 'is a quick fix' : 'are quick fixes'}.`;
   return e(s);
@@ -173,7 +190,10 @@ function fixesSection(top: RankedFinding[], report: AuditReport): string {
     </li>`,
     )
     .join('');
-  const total = Math.min(100 - (report.overall ?? 0), Math.round(top.reduce((s, f) => s + f.gain, 0)));
+  const total = Math.min(
+    100 - (report.overall ?? 0),
+    Math.round(top.reduce((s, f) => s + f.gain, 0)),
+  );
   return `<section class="fixes" aria-labelledby="fixes-title">
     <h2 id="fixes-title">Fix these first</h2>
     <p class="section-lede">Ordered by how much each one helps. Together they are worth about ${total} points.</p>
@@ -193,7 +213,8 @@ function screensSection(r: AuditReport): string {
     const notes: string[] = [];
     if (l && l.scrollWidth > l.layoutWidth + 1) notes.push('scrolls sideways');
     if (l && l.scale < 0.9) notes.push('shrunk to fit');
-    if (l && l.text.totalChars > 0 && l.text.smallChars / l.text.totalChars > 0.25) notes.push('text too small');
+    if (l && l.text.totalChars > 0 && l.text.smallChars / l.text.totalChars > 0.25)
+      notes.push('text too small');
     return `<figcaption><strong>${device}</strong> ${s.width} px${notes.length > 0 ? `<span class="flag">${e(notes.join(', '))}</span>` : '<span class="ok">fits</span>'}</figcaption>`;
   };
   const shots = [...r.screenshots]
@@ -217,13 +238,55 @@ function speedSection(r: AuditReport): string {
   if (!m) return '';
   const rows: string[] = [];
   if (m.metrics.lcp !== null) {
-    rows.push(vital('Main content visible', 'Largest Contentful Paint', bullet({ label: 'Main content visible', value: m.metrics.lcp, good: 2500, poor: 4000, max: 10000, format: formatSeconds }), formatSeconds(m.metrics.lcp)));
+    rows.push(
+      vital(
+        'Main content visible',
+        'Largest Contentful Paint',
+        bullet({
+          label: 'Main content visible',
+          value: m.metrics.lcp,
+          good: 2500,
+          poor: 4000,
+          max: 10000,
+          format: formatSeconds,
+        }),
+        formatSeconds(m.metrics.lcp),
+      ),
+    );
   }
   if (m.metrics.tbt !== null) {
-    rows.push(vital('Frozen while loading', 'Total Blocking Time', bullet({ label: 'Frozen while loading', value: m.metrics.tbt, good: 200, poor: 600, max: 2000, format: (n) => `${Math.round(n)} ms` }), `${Math.round(m.metrics.tbt)} ms`));
+    rows.push(
+      vital(
+        'Frozen while loading',
+        'Total Blocking Time',
+        bullet({
+          label: 'Frozen while loading',
+          value: m.metrics.tbt,
+          good: 200,
+          poor: 600,
+          max: 2000,
+          format: (n) => `${Math.round(n)} ms`,
+        }),
+        `${Math.round(m.metrics.tbt)} ms`,
+      ),
+    );
   }
   if (m.metrics.cls !== null) {
-    rows.push(vital('Page jumping around', 'Cumulative Layout Shift', bullet({ label: 'Page jumping around', value: m.metrics.cls, good: 0.1, poor: 0.25, max: 0.5, format: (n) => n.toFixed(2) }), m.metrics.cls.toFixed(2)));
+    rows.push(
+      vital(
+        'Page jumping around',
+        'Cumulative Layout Shift',
+        bullet({
+          label: 'Page jumping around',
+          value: m.metrics.cls,
+          good: 0.1,
+          poor: 0.25,
+          max: 0.5,
+          format: (n) => n.toFixed(2),
+        }),
+        m.metrics.cls.toFixed(2),
+      ),
+    );
   }
   const resources = m.largestResources.slice(0, 5).map((res) => ({
     label: shortUrl(res.url, r.finalUrl),
@@ -274,7 +337,9 @@ function moreFixes(rest: RankedFinding[]): string {
 
 function preparedBy(p: NonNullable<HtmlOptions['preparedBy']>): string {
   const link = p.url ? `<a href="${e(p.url)}">${e(p.name)}</a>` : e(p.name);
-  const mail = p.email ? ` You can reach me at <a href="mailto:${e(p.email)}">${e(p.email)}</a>.` : '';
+  const mail = p.email
+    ? ` You can reach me at <a href="mailto:${e(p.email)}">${e(p.email)}</a>.`
+    : '';
   return `<div class="prepared"><p>Prepared by ${link}. I am happy to walk you through any of this.${mail}</p></div>`;
 }
 

@@ -15,7 +15,10 @@ async function main(argv: string[]): Promise<number> {
   try {
     args = parseCliArgs(argv);
   } catch (err) {
-    if (err instanceof UsageError || (err as { code?: string }).code?.startsWith('ERR_PARSE_ARGS')) {
+    if (
+      err instanceof UsageError ||
+      (err as { code?: string }).code?.startsWith('ERR_PARSE_ARGS')
+    ) {
       process.stderr.write(`${(err as Error).message}\n\nRun shopfront-audit --help for usage.\n`);
       return 64;
     }
@@ -48,7 +51,10 @@ async function main(argv: string[]): Promise<number> {
   const out = resolve(args.out ?? 'shopfront-report');
   log.info('audit started', { url: args.url });
   const result = await audit(
-    { url: args.url ?? '', ...(Object.keys(args.business).length > 0 ? { business: args.business } : {}) },
+    {
+      url: args.url ?? '',
+      ...(Object.keys(args.business).length > 0 ? { business: args.business } : {}),
+    },
     auditOptions,
   );
   const files = await writeReport(result, out, { ...report, formats: args.formats });
@@ -100,7 +106,10 @@ function summary(r: AuditReport, files: string[]): string {
     `  ${r.finalUrl}`,
     `  Grade ${r.grade}, ${r.overall ?? '–'}/100`,
     '',
-    ...r.areas.map((a) => `  ${AREA_NAMES[a.area].padEnd(26)} ${a.score === null ? 'not checked' : String(a.score).padStart(3)}`),
+    ...r.areas.map(
+      (a) =>
+        `  ${AREA_NAMES[a.area].padEnd(26)} ${a.score === null ? 'not checked' : String(a.score).padStart(3)}`,
+    ),
     '',
   ];
   const top = r.findings.slice(0, 3);
@@ -109,7 +118,12 @@ function summary(r: AuditReport, files: string[]): string {
     top.forEach((f, i) => lines.push(`  ${i + 1}. ${f.title}`));
     lines.push('');
   }
-  lines.push(...files.filter((f) => !f.includes('screenshots')).map((f) => `  ${relative(process.cwd(), f)}`), '');
+  lines.push(
+    ...files
+      .filter((f) => !f.includes('screenshots'))
+      .map((f) => `  ${relative(process.cwd(), f)}`),
+    '',
+  );
   return `${lines.join('\n')}\n`;
 }
 

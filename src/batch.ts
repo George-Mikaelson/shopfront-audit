@@ -32,7 +32,10 @@ const pick = (row: Record<string, string>, ...keys: string[]): string => {
  * phone) and OpenStreetMap tag names (contact:website, addr:street, …), so an
  * Overpass export can be fed in as is.
  */
-export function leadsFromCsv(text: string): { leads: Lead[]; skipped: { row: number; reason: string }[] } {
+export function leadsFromCsv(text: string): {
+  leads: Lead[];
+  skipped: { row: number; reason: string }[];
+} {
   const leads: Lead[] = [];
   const skipped: { row: number; reason: string }[] = [];
   const seen = new Map<string, number>();
@@ -52,7 +55,10 @@ export function leadsFromCsv(text: string): { leads: Lead[]; skipped: { row: num
       skipped.push({ row: rowNo, reason: 'invalid URL' });
       return;
     }
-    const key = url.replace(/\/+$/, '').replace(/^https?:\/\/(www\.)?/, '').toLowerCase();
+    const key = url
+      .replace(/\/+$/, '')
+      .replace(/^https?:\/\/(www\.)?/, '')
+      .toLowerCase();
     const first = seen.get(key);
     if (first !== undefined) {
       skipped.push({ row: rowNo, reason: `duplicate of row ${first}` });
@@ -60,7 +66,9 @@ export function leadsFromCsv(text: string): { leads: Lead[]; skipped: { row: num
     }
     seen.set(key, rowNo);
 
-    const street = [pick(row, 'addr:street'), pick(row, 'addr:housenumber')].filter(Boolean).join(' ');
+    const street = [pick(row, 'addr:street'), pick(row, 'addr:housenumber')]
+      .filter(Boolean)
+      .join(' ');
     const town = [pick(row, 'addr:postcode'), pick(row, 'addr:city')].filter(Boolean).join(' ');
     const address = pick(row, 'address', 'addr:full') || [street, town].filter(Boolean).join(', ');
     const business: BusinessInfo = {};
@@ -124,7 +132,13 @@ export async function runBatch(leads: readonly Lead[], opts: BatchOptions): Prom
   const auditFn: AuditFn =
     opts.auditFn ??
     ((input, signal) =>
-      audit(input, { ...opts.audit, ...(browser ? { browser } : {}), lighthouseLock, logger: log, signal }));
+      audit(input, {
+        ...opts.audit,
+        ...(browser ? { browser } : {}),
+        lighthouseLock,
+        logger: log,
+        signal,
+      }));
 
   const used = new Set<string>();
   const folderFor = (lead: Lead): string => {
@@ -136,48 +150,77 @@ export async function runBatch(leads: readonly Lead[], opts: BatchOptions): Prom
   };
 
   try {
-    const settled = await mapPool(leads, opts.concurrency ?? 2, async (lead): Promise<BatchResult> => {
-      const folder = folderFor(lead);
-      const dir = join(opts.outDir, folder);
-      const siteLog = log.child({ site: lead.url, id: lead.id });
-      const cacheKey = JSON.stringify([TOOL_VERSION, lead.url, lead.business, opts.audit?.lighthouse ?? true]);
-      const started = Date.now();
-      let attempts = 0;
-      let status: BatchResult['status'] = 'ok';
-      try {
-        let report = await cache?.get(cacheKey);
-        if (report) {
-          status = 'cached';
-          siteLog.info('cache hit');
-        } else {
-          siteLog.info('audit started');
-          report = await retry(
-            async (attempt) => {
-              attempts = attempt;
-              return withTimeout((signal) => auditFn({ url: lead.url, business: lead.business }, signal), opts.timeoutMs ?? 180_000, `Audit of ${lead.url}`);
-            },
-            {
-              retries: opts.retries ?? 1,
-              baseDelayMs: opts.retryDelayMs ?? 2_000,
-              shouldRetry: (err) => !PERMANENT.test(err.message),
-              onRetry: (err, attempt, delayMs) => {
-                siteLog.warn('audit failed, retrying', { attempt, delayMs, error: err.message });
+    const settled = await mapPool(
+      leads,
+      opts.concurrency ?? 2,
+      async (lead): Promise<BatchResult> => {
+        const folder = folderFor(lead);
+        const dir = join(opts.outDir, folder);
+        const siteLog = log.child({ site: lead.url, id: lead.id });
+        const cacheKey = JSON.stringify([
+          TOOL_VERSION,
+          lead.url,
+          lead.business,
+          opts.audit?.lighthouse ?? true,
+        ]);
+        const started = Date.now();
+        let attempts = 0;
+        let status: BatchResult['status'] = 'ok';
+        try {
+          let report = await cache?.get(cacheKey);
+          if (report) {
+            status = 'cached';
+            siteLog.info('cache hit');
+          } else {
+            siteLog.info('audit started');
+            report = await retry(
+              async (attempt) => {
+                attempts = attempt;
+                return withTimeout(
+                  (signal) => auditFn({ url: lead.url, business: lead.business }, signal),
+                  opts.timeoutMs ?? 180_000,
+                  `Audit of ${lead.url}`,
+                );
               },
-            },
-          );
-          await cache?.set(cacheKey, report);
+              {
+                retries: opts.retries ?? 1,
+                baseDelayMs: opts.retryDelayMs ?? 2_000,
+                shouldRetry: (err) => !PERMANENT.test(err.message),
+                onRetry: (err, attempt, delayMs) => {
+                  siteLog.warn('audit failed, retrying', { attempt, delayMs, error: err.message });
+                },
+              },
+            );
+            await cache?.set(cacheKey, report);
+          }
+          await writeReport(report, dir, {
+            ...opts.report,
+            formats,
+            ...(browser ? { browser } : {}),
+          });
+          siteLog.info('audit finished', {
+            overall: report.overall,
+            grade: report.grade,
+            ms: Date.now() - started,
+            status,
+          });
+          return { lead, status, report, dir: folder, attempts };
+        } catch (err) {
+          const error = err instanceof Error ? err.message : String(err);
+          siteLog.error('audit failed', { error, attempts });
+          return { lead, status: 'failed', error, attempts };
         }
-        await writeReport(report, dir, { ...opts.report, formats, ...(browser ? { browser } : {}) });
-        siteLog.info('audit finished', { overall: report.overall, grade: report.grade, ms: Date.now() - started, status });
-        return { lead, status, report, dir: folder, attempts };
-      } catch (err) {
-        const error = err instanceof Error ? err.message : String(err);
-        siteLog.error('audit failed', { error, attempts });
-        return { lead, status: 'failed', error, attempts };
-      }
-    });
+      },
+    );
     const results = settled.map((s, i) =>
-      s.ok ? s.value : { lead: leads[i] as Lead, status: 'failed' as const, error: s.error.message, attempts: 0 },
+      s.ok
+        ? s.value
+        : {
+            lead: leads[i] as Lead,
+            status: 'failed' as const,
+            error: s.error.message,
+            attempts: 0,
+          },
     );
     await writeSummary(opts.outDir, results);
     return results;
@@ -206,11 +249,14 @@ async function writeSummary(outDir: string, results: BatchResult[]): Promise<voi
   );
   await writeFile(join(outDir, 'summary.csv'), `${[header.join(','), ...rows].join('\n')}\n`);
 
-  const sorted = [...results].sort((a, b) => (a.report?.overall ?? 101) - (b.report?.overall ?? 101));
+  const sorted = [...results].sort(
+    (a, b) => (a.report?.overall ?? 101) - (b.report?.overall ?? 101),
+  );
   const items = sorted
     .map((r) => {
       const name = e(r.lead.business.name ?? r.lead.url);
-      if (!r.report || !r.dir) return `<tr><td>${name}</td><td>–</td><td colspan="2">Failed: ${e(r.error ?? '')}</td></tr>`;
+      if (!r.report || !r.dir)
+        return `<tr><td>${name}</td><td>–</td><td colspan="2">Failed: ${e(r.error ?? '')}</td></tr>`;
       return `<tr><td><a href="${e(r.dir)}/report.html">${name}</a></td><td class="n">${r.report.overall ?? '–'}</td><td>${e(r.report.grade)}</td><td>${e(r.report.findings[0]?.title ?? 'Nothing to fix')}</td></tr>`;
     })
     .join('\n');

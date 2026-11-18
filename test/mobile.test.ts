@@ -50,9 +50,15 @@ describe('analyzeMobile', () => {
   });
 
   it('scores tap targets by the share that are too small', () => {
-    const small = Array.from({ length: 3 }, (_, i) => ({ selector: `a.n${i}`, width: 30, height: 14 }));
+    const small = Array.from({ length: 3 }, (_, i) => ({
+      selector: `a.n${i}`,
+      width: 30,
+      height: 14,
+    }));
     const r = analyzeMobile(
-      makeEvidence({ layouts: [layout(375, { tapTargets: { total: 12, small } }), layout(768), layout(1280)] }),
+      makeEvidence({
+        layouts: [layout(375, { tapTargets: { total: 12, small } }), layout(768), layout(1280)],
+      }),
     );
     expect(byId(r, 'mobile.tap-targets')?.score).toBeCloseTo(0.5);
   });
@@ -63,7 +69,11 @@ describe('analyzeMobile', () => {
         layouts: [
           layout(375, {
             scale: 0.38,
-            text: { totalChars: 1000, smallChars: 900, samples: [{ selector: 'p', width: 300, height: 10, text: 'Call us' }] },
+            text: {
+              totalChars: 1000,
+              smallChars: 900,
+              samples: [{ selector: 'p', width: 300, height: 10, text: 'Call us' }],
+            },
           }),
           layout(768),
           layout(1280),

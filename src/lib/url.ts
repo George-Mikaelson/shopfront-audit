@@ -13,7 +13,11 @@ export function isLocalHost(url: string): boolean {
   if (kind === 4) {
     const [a = 0, b = 0] = host.split('.').map(Number);
     return (
-      a === 127 || a === 10 || a === 0 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31)
+      a === 127 ||
+      a === 10 ||
+      a === 0 ||
+      (a === 192 && b === 168) ||
+      (a === 172 && b >= 16 && b <= 31)
     );
   }
   if (kind === 6) return host === '::1' || /^f[cd]/.test(host) || host.startsWith('fe80');

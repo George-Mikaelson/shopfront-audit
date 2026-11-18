@@ -69,11 +69,18 @@ export class UsageError extends Error {
   override name = 'UsageError';
 }
 
-const positive = (name: string, raw: string | undefined, fallback: number, allowZero = false): number => {
+const positive = (
+  name: string,
+  raw: string | undefined,
+  fallback: number,
+  allowZero = false,
+): number => {
   if (raw === undefined) return fallback;
   const n = Number(raw);
   if (!Number.isFinite(n) || n < 0 || (!allowZero && n === 0)) {
-    throw new UsageError(`--${name} must be a ${allowZero ? 'non-negative' : 'positive'} number, got “${raw}”`);
+    throw new UsageError(
+      `--${name} must be a ${allowZero ? 'non-negative' : 'positive'} number, got “${raw}”`,
+    );
   }
   return n;
 };
@@ -117,7 +124,8 @@ export function parseCliArgs(argv: string[]): CliArgs {
 
   const formats = (values.format ?? 'html,json,pdf').split(',').map((f) => f.trim().toLowerCase());
   const bad = formats.filter((f) => !FORMATS.includes(f as Format));
-  if (bad.length > 0) throw new UsageError(`Unknown format: ${bad.join(', ')} (use ${FORMATS.join(', ')})`);
+  if (bad.length > 0)
+    throw new UsageError(`Unknown format: ${bad.join(', ')} (use ${FORMATS.join(', ')})`);
 
   const logFormat = values['log-format'];
   if (logFormat !== undefined && logFormat !== 'json' && logFormat !== 'pretty') {
@@ -156,10 +164,12 @@ export function parseCliArgs(argv: string[]): CliArgs {
     if (values['prepared-by-url']) args.preparedBy.url = values['prepared-by-url'];
     if (values['prepared-by-email']) args.preparedBy.email = values['prepared-by-email'];
   }
-  if (values['fail-under'] !== undefined) args.failUnder = positive('fail-under', values['fail-under'], 0, true);
+  if (values['fail-under'] !== undefined)
+    args.failUnder = positive('fail-under', values['fail-under'], 0, true);
 
   if (!args.help && !args.version) {
-    if (!args.url && !args.csv) throw new UsageError('Give a URL to audit, or --csv with a list of sites.');
+    if (!args.url && !args.csv)
+      throw new UsageError('Give a URL to audit, or --csv with a list of sites.');
     if (args.url && args.csv) throw new UsageError('Use either a URL or --csv, not both.');
   }
   return args;

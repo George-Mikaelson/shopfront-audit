@@ -19,10 +19,12 @@ export function inspectTls(url: string, timeoutMs = 8_000, now = Date.now()): Pr
     socket.once('secureConnect', () => {
       const cert: PeerCertificate = socket.getPeerCertificate();
       const validTo = cert.valid_to ? new Date(cert.valid_to) : undefined;
-      const daysRemaining = validTo ? Math.floor((validTo.getTime() - now) / 86_400_000) : undefined;
+      const daysRemaining = validTo
+        ? Math.floor((validTo.getTime() - now) / 86_400_000)
+        : undefined;
       const issuer = cert.issuer as Partial<Record<string, string>> | undefined;
       const authError = socket.authorizationError as Error | string | null;
-      const error = authError ? String(authError instanceof Error ? authError.message : authError) : undefined;
+      const error = authError instanceof Error ? authError.message : (authError ?? undefined);
       done({
         valid: socket.authorized && (daysRemaining ?? 0) >= 0,
         ...(issuer?.O || issuer?.CN ? { issuer: issuer.O ?? issuer.CN ?? '' } : {}),
@@ -34,7 +36,7 @@ export function inspectTls(url: string, timeoutMs = 8_000, now = Date.now()): Pr
     socket.once('timeout', () => {
       done({ valid: false, error: 'TLS handshake timed out' });
     });
-    socket.once('error', (err) => {
+    socket.once('error', (err: Error) => {
       done({ valid: false, error: err.message });
     });
   });

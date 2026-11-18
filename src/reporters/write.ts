@@ -19,7 +19,8 @@ export interface WriteOptions extends HtmlOptions {
 /** Prints the HTML report to an A4 PDF with Chromium. */
 export async function renderPdf(html: string, browser?: Browser): Promise<Buffer> {
   const own = browser ? undefined : await launchBrowser();
-  const b = browser ?? (own as Browser);
+  const b = browser ?? own;
+  if (!b) throw new Error('No browser available for PDF output');
   const context = await b.newContext({ colorScheme: 'light' });
   try {
     const page = await context.newPage();
@@ -33,7 +34,11 @@ export async function renderPdf(html: string, browser?: Browser): Promise<Buffer
 }
 
 /** Writes report.{html,json,md,pdf} and the screenshots into `dir`. Returns the paths written. */
-export async function writeReport(report: AuditReport, dir: string, opts: WriteOptions = {}): Promise<string[]> {
+export async function writeReport(
+  report: AuditReport,
+  dir: string,
+  opts: WriteOptions = {},
+): Promise<string[]> {
   const formats = opts.formats ?? ['html', 'json'];
   await mkdir(dir, { recursive: true });
   const written: string[] = [];

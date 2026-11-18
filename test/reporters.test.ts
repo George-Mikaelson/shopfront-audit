@@ -9,7 +9,11 @@ import { fixture, layout, makeEvidence } from './support/evidence.ts';
 const badEvidence = makeEvidence({
   html: fixture('bad-restaurant.html'),
   text: 'Welcome\nCall us: 21 999 0000',
-  layouts: [layout(375, { scrollWidth: 1100, layoutWidth: 980, scale: 0.34 }), layout(768), layout(1280)],
+  layouts: [
+    layout(375, { scrollWidth: 1100, layoutWidth: 980, scale: 0.34 }),
+    layout(768),
+    layout(1280),
+  ],
   screenshots: [{ width: 375, height: 812, mime: 'image/jpeg', data: 'AAAA' }],
 });
 const business = { name: 'Café <script>alert(1)</script>', phone: '+351 21 234 5678' };
@@ -17,7 +21,9 @@ const report = buildReport(badEvidence, { business, startedAt: new Date('2026-11
 
 describe('escapeHtml', () => {
   it('escapes markup and quotes', () => {
-    expect(escapeHtml(`<a href="x">'&'</a>`)).toBe('&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;');
+    expect(escapeHtml(`<a href="x">'&'</a>`)).toBe(
+      '&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;',
+    );
   });
 });
 
@@ -59,7 +65,9 @@ describe('renderHtml', () => {
     const first = report.findings[0];
     const second = report.findings[1];
     expect(first && second).toBeTruthy();
-    expect(html.indexOf(escapeHtml(first?.title ?? ''))).toBeLessThan(html.indexOf(escapeHtml(second?.title ?? '')));
+    expect(html.indexOf(escapeHtml(first?.title ?? ''))).toBeLessThan(
+      html.indexOf(escapeHtml(second?.title ?? '')),
+    );
   });
 
   it('embeds screenshots as data URIs', () => {
@@ -67,7 +75,9 @@ describe('renderHtml', () => {
   });
 
   it('credits whoever prepared the report when asked', () => {
-    const credited = renderHtml(report, { preparedBy: { name: 'George Mikaelson', url: 'https://george-mikaelson.github.io/' } });
+    const credited = renderHtml(report, {
+      preparedBy: { name: 'George Mikaelson', url: 'https://george-mikaelson.github.io/' },
+    });
     expect(credited).toContain('George Mikaelson');
     expect(credited).toContain('href="https://george-mikaelson.github.io/"');
   });
@@ -84,7 +94,9 @@ describe('renderMarkdown', () => {
 
 describe('toJson', () => {
   it('drops screenshot data unless asked to keep it', () => {
-    const parsed = JSON.parse(toJson(report)) as { screenshots: { data?: string; file?: string }[] };
+    const parsed = JSON.parse(toJson(report)) as {
+      screenshots: { data?: string; file?: string }[];
+    };
     expect(parsed.screenshots[0]?.data).toBeUndefined();
     expect(parsed.screenshots[0]?.file).toBe('screenshots/375.jpg');
   });

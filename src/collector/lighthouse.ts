@@ -23,8 +23,14 @@ export function summarizeLhr(lhr: LhrLike, formFactor: 'mobile' | 'desktop'): Li
     resourceType?: string;
   }[];
   const largestResources: LighthouseResource[] = items
-    .filter((i) => typeof i.url === 'string' && !i.url.startsWith('data:') && (i.transferSize ?? 0) > 0)
-    .map((i) => ({ url: i.url ?? '', bytes: i.transferSize ?? 0, resourceType: i.resourceType ?? 'Other' }))
+    .filter(
+      (i) => typeof i.url === 'string' && !i.url.startsWith('data:') && (i.transferSize ?? 0) > 0,
+    )
+    .map((i) => ({
+      url: i.url ?? '',
+      bytes: i.transferSize ?? 0,
+      resourceType: i.resourceType ?? 'Other',
+    }))
     .sort((a, b) => b.bytes - a.bytes)
     .slice(0, 10);
 
@@ -64,10 +70,19 @@ export async function runLighthouse(
 ): Promise<{ mobile: LighthouseRun | null; desktop: LighthouseRun | null }> {
   const chrome = await chromeLauncher.launch({
     chromePath: opts.chromePath,
-    chromeFlags: ['--headless=new', '--no-sandbox', '--disable-gpu', '--no-first-run', '--disable-dev-shm-usage'],
+    chromeFlags: [
+      '--headless=new',
+      '--no-sandbox',
+      '--disable-gpu',
+      '--no-first-run',
+      '--disable-dev-shm-usage',
+    ],
     logLevel: 'silent',
   });
-  const out: { mobile: LighthouseRun | null; desktop: LighthouseRun | null } = { mobile: null, desktop: null };
+  const out: { mobile: LighthouseRun | null; desktop: LighthouseRun | null } = {
+    mobile: null,
+    desktop: null,
+  };
   try {
     for (const formFactor of opts.formFactors ?? ['mobile', 'desktop']) {
       const flags = {
@@ -77,10 +92,15 @@ export async function runLighthouse(
         onlyCategories: ['performance'],
         maxWaitForLoad: opts.timeoutMs ?? 45_000,
       };
-      const result = await lighthouse(url, flags, formFactor === 'desktop' ? desktopConfig : undefined);
+      const result = await lighthouse(
+        url,
+        flags,
+        formFactor === 'desktop' ? desktopConfig : undefined,
+      );
       const lhr = result?.lhr as unknown as LhrLike | undefined;
       if (!lhr) throw new Error('Lighthouse returned no result');
-      if (lhr.runtimeError) throw new Error(`${lhr.runtimeError.code}: ${lhr.runtimeError.message}`);
+      if (lhr.runtimeError)
+        throw new Error(`${lhr.runtimeError.code}: ${lhr.runtimeError.message}`);
       out[formFactor] = summarizeLhr(lhr, formFactor);
     }
   } finally {

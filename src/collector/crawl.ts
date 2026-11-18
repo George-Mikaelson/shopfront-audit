@@ -64,7 +64,12 @@ export async function crawlSite(startUrl: string, opts: CrawlOptions = {}): Prom
     for (const [i, r] of results.entries()) {
       const url = batch[i] ?? '';
       if (!r.ok) {
-        broken.push({ url, status: null, foundOn: foundOn.get(url) ?? startUrl, error: errorMessage(r.error) });
+        broken.push({
+          url,
+          status: null,
+          foundOn: foundOn.get(url) ?? startUrl,
+          error: errorMessage(r.error),
+        });
         continue;
       }
       const { res } = r.value;
@@ -122,7 +127,8 @@ function links(html: string, base: string): { href: string; kind: 'page' | 'file
     if (!raw || /^(mailto|tel|javascript|data|sms|whatsapp):/i.test(raw.trim())) return;
     try {
       const u = new URL(raw.trim(), base);
-      if (u.protocol === 'http:' || u.protocol === 'https:') out.push({ href: stripHash(u.href), kind });
+      if (u.protocol === 'http:' || u.protocol === 'https:')
+        out.push({ href: stripHash(u.href), kind });
     } catch {
       /* not a URL */
     }

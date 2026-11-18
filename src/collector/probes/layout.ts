@@ -23,17 +23,25 @@ export function layoutProbe(args: { minTap: number; minText: number }): LayoutPr
   const layoutWidth = doc.clientWidth;
   const scrollWidth = Math.max(doc.scrollWidth, document.body.scrollWidth);
   // How much the phone zoomed the page out to fit it (1 for responsive pages).
-  const scale = Math.min(1, window.visualViewport?.scale ?? 1, window.innerWidth > 0 ? screen.width / window.innerWidth : 1);
+  const scale = Math.min(
+    1,
+    window.visualViewport?.scale ?? 1,
+    window.innerWidth > 0 ? screen.width / window.innerWidth : 1,
+  );
 
   const describe = (el: Element): string => {
     const tag = el.tagName.toLowerCase();
     if (el.id) return `${tag}#${el.id}`;
-    const cls = typeof el.className === 'string' ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2) : [];
+    const cls =
+      typeof el.className === 'string'
+        ? el.className.trim().split(/\s+/).filter(Boolean).slice(0, 2)
+        : [];
     return cls.length > 0 ? `${tag}.${cls.join('.')}` : tag;
   };
   const visible = (el: Element): boolean => {
     const style = getComputedStyle(el);
-    if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0) return false;
+    if (style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0)
+      return false;
     const r = el.getBoundingClientRect();
     return r.width > 0 && r.height > 0;
   };
@@ -50,9 +58,14 @@ export function layoutProbe(args: { minTap: number; minText: number }): LayoutPr
       const r = el.getBoundingClientRect();
       if (r.right <= layoutWidth + 1 || r.width === 0) continue;
       const parent = el.parentElement;
-      const parentRight = parent && parent !== document.body ? parent.getBoundingClientRect().right : 0;
+      const parentRight =
+        parent && parent !== document.body ? parent.getBoundingClientRect().right : 0;
       if (parentRight > layoutWidth + 1) continue;
-      overflowing.push({ selector: describe(el), width: Math.round(r.width), height: Math.round(r.height) });
+      overflowing.push({
+        selector: describe(el),
+        width: Math.round(r.width),
+        height: Math.round(r.height),
+      });
     }
     overflowing.sort((a, b) => b.width - a.width);
     overflowing.splice(5);
@@ -72,7 +85,11 @@ export function layoutProbe(args: { minTap: number; minText: number }): LayoutPr
     if (Math.min(w, h) >= args.minTap) continue;
     const parent = el.parentElement;
     const inline = getComputedStyle(el).display === 'inline';
-    if (inline && parent && (parent.textContent ?? '').trim().length > (el.textContent ?? '').trim().length + 25) {
+    if (
+      inline &&
+      parent &&
+      (parent.textContent || '').trim().length > (el.textContent || '').trim().length + 25
+    ) {
       continue;
     }
     const item: Box = { selector: describe(el), width: Math.round(w), height: Math.round(h) };
@@ -89,7 +106,13 @@ export function layoutProbe(args: { minTap: number; minText: number }): LayoutPr
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const text = (node.textContent ?? '').trim();
     const parent = node.parentElement;
-    if (!text || !parent || ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName) || !visible(parent)) continue;
+    if (
+      !text ||
+      !parent ||
+      ['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName) ||
+      !visible(parent)
+    )
+      continue;
     const px = parseFloat(getComputedStyle(parent).fontSize) * scale;
     totalChars += text.length;
     if (px < args.minText) {

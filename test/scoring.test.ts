@@ -58,7 +58,11 @@ describe('gradeFor', () => {
 
 describe('scoreReport', () => {
   const areas: AreaResult[] = [
-    { area: 'performance', checks: [check('lcp', 1, 0)], findings: [finding('lcp', 'performance')] },
+    {
+      area: 'performance',
+      checks: [check('lcp', 1, 0)],
+      findings: [finding('lcp', 'performance')],
+    },
     {
       area: 'seo',
       checks: [check('title', 1, 1), check('desc', 1, 0)],

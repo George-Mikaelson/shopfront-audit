@@ -37,7 +37,10 @@ export interface CollectOptions {
 export async function collect(url: string, opts: CollectOptions = {}): Promise<Evidence> {
   const log = opts.logger ?? silentLogger;
   const timeoutMs = opts.timeoutMs ?? 45_000;
-  const req = { timeoutMs: Math.min(timeoutMs, 20_000), ...(opts.signal ? { signal: opts.signal } : {}) };
+  const req = {
+    timeoutMs: Math.min(timeoutMs, 20_000),
+    ...(opts.signal ? { signal: opts.signal } : {}),
+  };
   const errors: string[] = [];
 
   log.debug('fetching home page', { url });
@@ -101,7 +104,10 @@ export async function collect(url: string, opts: CollectOptions = {}): Promise<E
     try {
       const chromePath = await resolveChromePath();
       log.debug('running lighthouse', { url: finalUrl });
-      Object.assign(lighthouse, await lock(() => runLighthouse(finalUrl, { chromePath, timeoutMs })));
+      Object.assign(
+        lighthouse,
+        await lock(() => runLighthouse(finalUrl, { chromePath, timeoutMs })),
+      );
     } catch (err) {
       lighthouse.error = errorMessage(err);
       errors.push(`Lighthouse failed: ${lighthouse.error}`);

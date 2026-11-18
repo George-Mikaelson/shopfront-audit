@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { extractJsonLd, findLocalBusiness, validateLocalBusiness } from '../src/analyzers/structured-data.ts';
+import {
+  extractJsonLd,
+  findLocalBusiness,
+  validateLocalBusiness,
+} from '../src/analyzers/structured-data.ts';
 import { fixture } from './support/evidence.ts';
 
 const ld = (json: string) =>
@@ -24,8 +28,9 @@ describe('extractJsonLd', () => {
 
 describe('findLocalBusiness', () => {
   it('recognises LocalBusiness subtypes, including array @type and schema: prefixes', () => {
-    expect(findLocalBusiness([{ '@type': 'WebSite' }, { '@type': ['Thing', 'CafeOrCoffeeShop'] }]))
-      .toMatchObject({ '@type': ['Thing', 'CafeOrCoffeeShop'] });
+    expect(
+      findLocalBusiness([{ '@type': 'WebSite' }, { '@type': ['Thing', 'CafeOrCoffeeShop'] }]),
+    ).toMatchObject({ '@type': ['Thing', 'CafeOrCoffeeShop'] });
     expect(findLocalBusiness([{ '@type': 'schema:Restaurant' }])).toBeDefined();
     expect(findLocalBusiness([{ '@type': 'http://schema.org/Dentist' }])).toBeDefined();
   });
@@ -44,7 +49,11 @@ describe('validateLocalBusiness', () => {
   });
 
   it('lists missing required and recommended properties', () => {
-    const result = validateLocalBusiness({ '@type': 'Restaurant', name: 'X', address: 'Main St 1' });
+    const result = validateLocalBusiness({
+      '@type': 'Restaurant',
+      name: 'X',
+      address: 'Main St 1',
+    });
     expect(result.missingRequired).toEqual(['telephone', 'openingHours']);
     expect(result.missingRecommended).toContain('geo');
     expect(result.missingRecommended).toContain('servesCuisine');

@@ -13,16 +13,19 @@ export async function mapPool<I, O>(
 ): Promise<Settled<O>[]> {
   const results = new Array<Settled<O>>(items.length);
   let next = 0;
-  const lanes = Array.from({ length: Math.max(1, Math.min(concurrency, items.length)) }, async () => {
-    while (next < items.length) {
-      const i = next++;
-      try {
-        results[i] = { ok: true, value: await worker(items[i] as I, i) };
-      } catch (e) {
-        results[i] = { ok: false, error: toError(e) };
+  const lanes = Array.from(
+    { length: Math.max(1, Math.min(concurrency, items.length)) },
+    async () => {
+      while (next < items.length) {
+        const i = next++;
+        try {
+          results[i] = { ok: true, value: await worker(items[i] as I, i) };
+        } catch (e) {
+          results[i] = { ok: false, error: toError(e) };
+        }
       }
-    }
-  });
+    },
+  );
   await Promise.all(lanes);
   return results;
 }
@@ -36,7 +39,10 @@ export interface RetryOptions {
 }
 
 /** Runs `task` up to `retries + 1` times with exponential backoff and jitter. */
-export async function retry<T>(task: (attempt: number) => Promise<T>, opts: RetryOptions): Promise<T> {
+export async function retry<T>(
+  task: (attempt: number) => Promise<T>,
+  opts: RetryOptions,
+): Promise<T> {
   const base = opts.baseDelayMs ?? 1000;
   for (let attempt = 1; ; attempt++) {
     try {

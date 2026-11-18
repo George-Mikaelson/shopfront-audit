@@ -36,7 +36,9 @@ export function createLogger(opts: LoggerOptions = {}, bound: Fields = {}): Logg
     const extra = Object.entries(all)
       .map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v, errorReplacer)}`)
       .join(' ');
-    write(`${now().toISOString().slice(11, 19)} ${lvl.toUpperCase().padEnd(5)} ${msg}${extra ? `  ${extra}` : ''}`);
+    write(
+      `${now().toISOString().slice(11, 19)} ${lvl.toUpperCase().padEnd(5)} ${msg}${extra ? `  ${extra}` : ''}`,
+    );
   };
 
   return {

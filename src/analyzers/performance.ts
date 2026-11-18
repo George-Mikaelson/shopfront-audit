@@ -134,10 +134,22 @@ export function analyzePerformance(ev: Evidence): AreaResult {
   return { area: 'performance', checks, findings: findings.items };
 }
 
-function scoreCheck(id: string, title: string, weight: number, run: LighthouseRun | null, why: string): Check {
+function scoreCheck(
+  id: string,
+  title: string,
+  weight: number,
+  run: LighthouseRun | null,
+  why: string,
+): Check {
   if (!run || run.score === null) return skipped(id, title, weight, why);
   const pct = Math.round(run.score * 100);
-  return measure(id, title, weight, run.score, `Lighthouse ${run.formFactor} performance score: ${pct}/100.`);
+  return measure(
+    id,
+    title,
+    weight,
+    run.score,
+    `Lighthouse ${run.formFactor} performance score: ${pct}/100.`,
+  );
 }
 
 function heavyFiles(ev: Evidence, mobile: LighthouseRun | null): HeavyFile[] {

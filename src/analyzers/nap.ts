@@ -109,7 +109,11 @@ export function analyzeNap(ev: Evidence, business: BusinessInfo | undefined): Ar
     const want = normalizeText(given.name);
     const words = want.split(' ').filter((w) => w.length >= 3);
     const found = words.filter((w) => site.split(' ').includes(w)).length;
-    const score = site.includes(want) ? 1 : words.length > 0 && found / words.length >= 0.6 ? 0.6 : 0;
+    const score = site.includes(want)
+      ? 1
+      : words.length > 0 && found / words.length >= 0.6
+        ? 0.6
+        : 0;
     const c = measure(
       'nap.name',
       'Business name matches',
@@ -124,7 +128,8 @@ export function analyzeNap(ev: Evidence, business: BusinessInfo | undefined): Ar
     checks.push(c);
     findings.add(c, {
       title: `Your business name “${given.name}” is not clearly on your home page`,
-      explanation: 'Google matches your website to your Maps listing by name. If they differ, it may not link them.',
+      explanation:
+        'Google matches your website to your Maps listing by name. If they differ, it may not link them.',
       fix: `Show the name exactly as on your listing${source} in the page title and header.`,
       severity: 'medium',
       effort: 'quick',
@@ -151,7 +156,10 @@ export function analyzeNap(ev: Evidence, business: BusinessInfo | undefined): Ar
     checks.push(c);
     const missing = want.filter((t) => !site.has(t));
     findings.add(c, {
-      title: ratio === 0 ? 'Your address is not on your home page' : 'Your address on the site is incomplete or different',
+      title:
+        ratio === 0
+          ? 'Your address is not on your home page'
+          : 'Your address on the site is incomplete or different',
       explanation: `Your listing says “${given.address}”${missing.length > 0 && ratio > 0 ? ` but the site is missing “${missing.join(' ')}”` : ''}. Customers and Google need the same address everywhere.`,
       fix: 'Show the full address (street, number, postcode, town) in the footer of every page, written the same way as on Google Maps.',
       severity: 'medium',
@@ -190,7 +198,8 @@ export function analyzeNap(ev: Evidence, business: BusinessInfo | undefined): Ar
           }
         : {
             title: 'Your phone number is not on your home page',
-            explanation: 'Many people visit a local business site just to call. If they cannot find the number in seconds, they call someone else.',
+            explanation:
+              'Many people visit a local business site just to call. If they cannot find the number in seconds, they call someone else.',
             fix: `Put ${given.phone} at the top of the page as a tap-to-call link.`,
             severity: 'high',
             effort: 'quick',
@@ -200,14 +209,18 @@ export function analyzeNap(ev: Evidence, business: BusinessInfo | undefined): Ar
 
   // Tap to call
   if (phonesOnSite.length === 0 && telLinks.length === 0) {
-    checks.push(skipped('nap.tap-to-call', 'Phone number can be tapped to call', 1, 'No phone number shown.'));
+    checks.push(
+      skipped('nap.tap-to-call', 'Phone number can be tapped to call', 1, 'No phone number shown.'),
+    );
   } else {
     const c = measure(
       'nap.tap-to-call',
       'Phone number can be tapped to call',
       1,
       telLinks.length > 0 ? 1 : 0,
-      telLinks.length > 0 ? 'The phone number is a tap-to-call link.' : 'The phone number is plain text.',
+      telLinks.length > 0
+        ? 'The phone number is a tap-to-call link.'
+        : 'The phone number is plain text.',
     );
     checks.push(c);
     findings.add(c, {

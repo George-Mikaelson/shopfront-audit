@@ -23,7 +23,8 @@ export interface PageProbeResult {
 
 const require = createRequire(import.meta.url);
 let axeSource: string | undefined;
-const loadAxe = (): string => (axeSource ??= readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8'));
+const loadAxe = (): string =>
+  (axeSource ??= readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8'));
 
 /**
  * Opens the page at each viewport in its own context, measures layout,
@@ -35,7 +36,14 @@ export async function probePage(
   opts: { timeoutMs?: number; screenshots?: boolean } = {},
 ): Promise<PageProbeResult> {
   const timeout = opts.timeoutMs ?? 30_000;
-  const result: PageProbeResult = { html: '', text: '', layouts: [], screenshots: [], axe: null, errors: [] };
+  const result: PageProbeResult = {
+    html: '',
+    text: '',
+    layouts: [],
+    screenshots: [],
+    axe: null,
+    errors: [],
+  };
 
   for (const vp of VIEWPORTS) {
     let context: BrowserContext | undefined;
@@ -57,7 +65,12 @@ export async function probePage(
 
       if (opts.screenshots !== false) {
         const data = await page.screenshot({ type: 'jpeg', quality: 72, fullPage: false, timeout });
-        result.screenshots.push({ width: vp.width, height: vp.height, mime: 'image/jpeg', data: data.toString('base64') });
+        result.screenshots.push({
+          width: vp.width,
+          height: vp.height,
+          mime: 'image/jpeg',
+          data: data.toString('base64'),
+        });
       }
 
       if (!vp.mobile) {
@@ -70,7 +83,9 @@ export async function probePage(
         }
       }
     } catch (err) {
-      result.errors.push(`Could not render at ${vp.width}px: ${(err as Error).message.split('\n')[0] ?? ''}`);
+      result.errors.push(
+        `Could not render at ${vp.width}px: ${(err as Error).message.split('\n')[0] ?? ''}`,
+      );
     } finally {
       await context?.close();
     }
@@ -102,9 +117,14 @@ interface RawAxeResult {
 async function runAxe(page: Page): Promise<AxeSummary> {
   await page.addScriptTag({ content: loadAxe() });
   const raw = await page.evaluate(async () => {
-    const axe = (window as unknown as { axe: { run: (ctx: Document, opts: object) => Promise<unknown> } }).axe;
+    const axe = (
+      window as unknown as { axe: { run: (ctx: Document, opts: object) => Promise<unknown> } }
+    ).axe;
     return axe.run(document, {
-      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'] },
+      runOnly: {
+        type: 'tag',
+        values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'],
+      },
       resultTypes: ['violations'],
     });
   });
@@ -117,7 +137,9 @@ async function runAxe(page: Page): Promise<AxeSummary> {
       description: v.description,
       helpUrl: v.helpUrl,
       nodeCount: v.nodes.length,
-      nodes: v.nodes.slice(0, 5).map((n) => ({ target: n.target.map(String).join(' '), html: n.html.slice(0, 200) })),
+      nodes: v.nodes
+        .slice(0, 5)
+        .map((n) => ({ target: n.target.map(String).join(' '), html: n.html.slice(0, 200) })),
     })),
     passes: r.passes.length,
     incomplete: r.incomplete.length,

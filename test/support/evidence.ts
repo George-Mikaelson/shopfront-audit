@@ -28,10 +28,25 @@ export function makeEvidence(overrides: Partial<Evidence> = {}): Evidence {
     headers: { 'content-type': 'text/html; charset=utf-8' },
     isLocal: false,
     httpUpgrade: { finalUrl: 'https://example-bistro.test/', upgradesToHttps: true },
-    tls: { valid: true, issuer: 'Test CA', validTo: '2027-06-01T00:00:00.000Z', daysRemaining: 195 },
+    tls: {
+      valid: true,
+      issuer: 'Test CA',
+      validTo: '2027-06-01T00:00:00.000Z',
+      daysRemaining: 195,
+    },
     text: 'Bistro Verde\nRua das Flores 12, 1200-195 Lisboa\n+351 21 234 5678\nOpen daily 12:00-23:00',
-    robots: { url: 'https://example-bistro.test/robots.txt', status: 200, found: true, body: 'User-agent: *\nAllow: /\n' },
-    sitemap: { url: 'https://example-bistro.test/sitemap.xml', status: 200, found: true, urlCount: 4 },
+    robots: {
+      url: 'https://example-bistro.test/robots.txt',
+      status: 200,
+      found: true,
+      body: 'User-agent: *\nAllow: /\n',
+    },
+    sitemap: {
+      url: 'https://example-bistro.test/sitemap.xml',
+      status: 200,
+      found: true,
+      urlCount: 4,
+    },
     crawl: {
       pagesVisited: ['https://example-bistro.test/'],
       linksChecked: 12,

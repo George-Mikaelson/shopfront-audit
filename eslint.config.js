@@ -21,6 +21,11 @@ export default tseslint.config(
     },
   },
   {
+    // Fakes in tests are often async for the type, not for awaiting.
+    files: ['test/**/*.ts'],
+    rules: { '@typescript-eslint/require-await': 'off' },
+  },
+  {
     files: ['eslint.config.js'],
     ...tseslint.configs.disableTypeChecked,
   },
