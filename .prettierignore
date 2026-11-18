@@ -1,0 +1,8 @@
+dist/
+docs/examples/
+coverage/
+reports/
+node_modules/
+package-lock.json
+test/sites/
+test/fixtures/

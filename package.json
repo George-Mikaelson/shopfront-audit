@@ -1,0 +1,78 @@
+{
+  "name": "shopfront-audit",
+  "version": "0.1.0",
+  "description": "Audit a small business website (speed, accessibility, mobile, local SEO, name/address/phone consistency) and get a plain-English report in HTML, JSON and PDF.",
+  "keywords": [
+    "audit",
+    "lighthouse",
+    "axe-core",
+    "accessibility",
+    "local-seo",
+    "small-business",
+    "playwright",
+    "report",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "George Mikaelson (https://george-mikaelson.github.io/)",
+  "homepage": "https://github.com/George-Mikaelson/shopfront-audit#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/George-Mikaelson/shopfront-audit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/George-Mikaelson/shopfront-audit/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "bin": {
+    "shopfront-audit": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:e2e": "vitest run --project e2e",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "demo": "node scripts/build-demo.ts",
+    "fixtures:serve": "node scripts/serve-fixtures.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "axe-core": "^4.14.1",
+    "cheerio": "^1.2.0",
+    "chrome-launcher": "^1.2.3",
+    "lighthouse": "^13.6.0",
+    "playwright": "^1.65.1",
+    "robots-parser": "^3.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.1"
+  }
+}
