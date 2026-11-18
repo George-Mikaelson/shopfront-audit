@@ -28,20 +28,10 @@ export function analyzePerformance(ev: Evidence): AreaResult {
   const { mobile, desktop, error } = ev.lighthouse;
   const why = error ? `Lighthouse could not run: ${error}` : 'Lighthouse was not run.';
 
-  checks.push(scoreCheck('perf.mobile-score', 'Speed score on phones', 4, mobile, why));
+  checks.push(scoreCheck('perf.mobile-score', 'Speed score on phones', 2, mobile, why));
   checks.push(scoreCheck('perf.desktop-score', 'Speed score on computers', 1, desktop, why));
-  const mobileScore = checks[0];
-  if (mobileScore && mobile?.score != null) {
-    findings.add(mobileScore, {
-      title: `Your site scores ${Math.round(mobile.score * 100)}/100 for speed on phones`,
-      explanation:
-        'Google uses this kind of speed test to decide how high to rank you, and slow sites lose visitors before they see anything.',
-      fix: 'Work through the speed items in this report; images and heavy files are usually the biggest wins.',
-      severity: mobile.score < 0.5 ? 'high' : 'medium',
-      effort: 'moderate',
-    });
-  }
-
+  // The overall Lighthouse score gets no finding of its own: the vitals and
+  // heavy-file findings below say what to change.
   const m = mobile?.metrics;
   if (!m || m.lcp === null) {
     checks.push(skipped('perf.lcp', 'Main content appears quickly', 3, why));
@@ -129,7 +119,7 @@ export function analyzePerformance(ev: Evidence): AreaResult {
   const heavyCheck = measure(
     'perf.heavy-files',
     'No oversized images or downloads',
-    2,
+    3,
     heavy.length === 0 ? 1 : heavy.length === 1 ? 0.4 : 0,
     heavy.length === 0
       ? 'No oversized images or files were found.'

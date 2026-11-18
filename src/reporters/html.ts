@@ -366,8 +366,9 @@ section + section, .verdict + section { margin-top: 44px; }
 
 .fixes ol { list-style: none; counter-reset: fix; margin: 0; padding: 0; display: grid; gap: 12px; }
 .fix { counter-increment: fix; display: grid; gap: 12px 24px; background: var(--sheet); border: 1px solid var(--rule); border-left: 6px solid var(--rule-strong);
-  border-radius: 6px; padding: 18px 18px 18px 64px; position: relative; break-inside: avoid; }
-.fix::before { content: counter(fix); position: absolute; left: 18px; top: 14px; font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1; color: var(--ink); }
+  border-radius: 6px; padding: 16px 16px 16px 50px; position: relative; break-inside: avoid; }
+@media (min-width: 768px) { .fix { padding: 18px 18px 18px 64px; } .fix::before { left: 20px; } }
+.fix::before { content: counter(fix); position: absolute; left: 14px; top: 14px; font-family: var(--display); font-weight: 700; font-size: 2rem; line-height: 1; color: var(--ink); }
 .fix.sev-critical { border-left-color: var(--critical); }
 .fix.sev-high { border-left-color: var(--serious); }
 .fix.sev-medium { border-left-color: var(--warning); }
@@ -436,6 +437,7 @@ td.st span { margin-left: 6px; }
 }
 .more-fixes { margin-top: 30px; }
 .more-fixes ul { padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); }
+.more-fixes li, td, tbody th, .fix-body { min-width: 0; overflow-wrap: anywhere; }
 .more-fixes strong { color: var(--ink); }
 
 .colophon { margin-top: 56px; border-top: 3px solid var(--ink); padding-top: 18px; color: var(--ink-2); font-size: .9rem; display: grid; gap: 10px; }
