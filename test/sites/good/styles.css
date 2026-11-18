@@ -1,0 +1,35 @@
+:root {
+  --ink: #1f2a26;
+  --muted: #4d5c56;
+  --paper: #fbf8f2;
+  --accent: #2f5d4e;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  line-height: 1.55;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-size: 1.05rem; }
+.top {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  padding: 12px 20px; border-bottom: 1px solid #e4ddd0;
+}
+.top a { color: var(--ink); text-decoration: none; padding: 12px 8px; display: inline-block; }
+.brand { font-weight: 700; font-size: 1.15rem; }
+nav a { margin-left: 4px; }
+main { max-width: 42rem; margin: 0 auto; padding: 24px 20px 48px; }
+h1 { font-size: clamp(2rem, 6vw, 3rem); margin: 0.2em 0; line-height: 1.1; }
+h2 { margin-top: 2em; }
+.lede { font-size: 1.2rem; color: var(--muted); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.button {
+  display: inline-block; padding: 12px 18px; border-radius: 6px; background: var(--accent);
+  color: #fff; text-decoration: none; font-weight: 600;
+}
+.button.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+.art { width: 100%; max-width: 420px; height: auto; display: block; margin-top: 24px; }
+address { font-style: normal; }
+.menu { list-style: none; padding: 0; }
+.menu li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px dashed #d8cfbf; }
+footer { border-top: 1px solid #e4ddd0; padding: 16px 20px; color: var(--muted); text-align: center; }
+footer a { color: var(--accent); display: inline-block; padding: 12px 4px; }
