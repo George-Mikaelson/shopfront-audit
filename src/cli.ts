@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from 'node:fs/promises';
-import { relative, resolve } from 'node:path';
+import { isAbsolute, relative, resolve } from 'node:path';
 import { audit } from './audit.ts';
 import { leadsFromCsv, runBatch } from './batch.ts';
 import { HELP, parseCliArgs, UsageError, type CliArgs } from './cli-args.ts';
@@ -100,6 +100,12 @@ async function batch(
   return failed === results.length ? 1 : 0;
 }
 
+/** Relative when inside the working directory, absolute otherwise. */
+function displayPath(path: string): string {
+  const rel = relative(process.cwd(), path);
+  return rel.startsWith('..') || isAbsolute(rel) ? path : rel;
+}
+
 function summary(r: AuditReport, files: string[]): string {
   const lines = [
     '',
@@ -119,9 +125,7 @@ function summary(r: AuditReport, files: string[]): string {
     lines.push('');
   }
   lines.push(
-    ...files
-      .filter((f) => !f.includes('screenshots'))
-      .map((f) => `  ${relative(process.cwd(), f)}`),
+    ...files.filter((f) => !f.includes('screenshots')).map((f) => `  ${displayPath(f)}`),
     '',
   );
   return `${lines.join('\n')}\n`;

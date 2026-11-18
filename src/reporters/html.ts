@@ -289,7 +289,10 @@ function speedSection(r: AuditReport): string {
     );
   }
   const resources = m.largestResources.slice(0, 5).map((res) => ({
-    label: shortUrl(res.url, r.finalUrl),
+    label:
+      res.resourceType === 'Document' && new URL(res.url).pathname === '/'
+        ? 'The page itself'
+        : shortUrl(res.url, r.finalUrl),
     value: res.bytes,
     display: formatBytes(res.bytes),
   }));
@@ -461,8 +464,8 @@ section + section, .verdict + section { margin-top: 44px; }
 
 .vitals { display: grid; gap: 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; }
 .vital-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.vital-head small { color: var(--muted); font-size: .8rem; margin-left: 6px; }
-.vital-head strong { font-family: var(--display); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.vital-head small { display: block; color: var(--muted); font-size: .8rem; }
+.vital-head strong { font-family: var(--display); font-size: 1.2rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bullet { display: block; overflow: visible; }
 .zone { opacity: .32; } .z-good { fill: var(--good); } .z-warning { fill: var(--warning); } .z-critical { fill: var(--critical); }
 .zone-gap { stroke: var(--sheet); stroke-width: 2; }

@@ -85,10 +85,10 @@ runs:
         SFA_OUT: ${{ runner.temp }}/shopfront-report
       run: |
         args=("$SFA_URL" --out "$SFA_OUT" --format html,json,md,pdf --max-pages "$SFA_MAX_PAGES" --log-format json)
-        [ -n "$SFA_NAME" ] && args+=(--name "$SFA_NAME")
-        [ -n "$SFA_ADDRESS" ] && args+=(--address "$SFA_ADDRESS")
-        [ -n "$SFA_PHONE" ] && args+=(--phone "$SFA_PHONE")
-        [ "$SFA_LIGHTHOUSE" = "false" ] && args+=(--no-lighthouse)
+        if [ -n "$SFA_NAME" ]; then args+=(--name "$SFA_NAME"); fi
+        if [ -n "$SFA_ADDRESS" ]; then args+=(--address "$SFA_ADDRESS"); fi
+        if [ -n "$SFA_PHONE" ]; then args+=(--phone "$SFA_PHONE"); fi
+        if [ "$SFA_LIGHTHOUSE" = "false" ]; then args+=(--no-lighthouse); fi
         node "${{ github.action_path }}/dist/cli.js" "${args[@]}"
         cat "$SFA_OUT/report.md" >> "$GITHUB_STEP_SUMMARY"
         node -e "const r=require(process.argv[1]);console.log('score='+(r.overall??0));console.log('grade='+r.grade)" "$SFA_OUT/report.json" >> "$GITHUB_OUTPUT"
