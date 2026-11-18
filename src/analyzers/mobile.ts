@@ -102,7 +102,7 @@ export function analyzeMobile(ev: Evidence): AreaResult {
       .map((s) => (s.text ? `“${s.text}”` : s.selector))
       .join(', ');
     findings.add(c, {
-      title: `${plural(small.length, 'link or button', 'links and buttons')} are too small to tap with a finger`,
+      title: `${plural(small.length, 'link or button', 'links and buttons')} ${small.length === 1 ? 'is' : 'are'} too small to tap with a finger`,
       explanation: `People keep hitting the wrong one${examples ? ` (for example ${examples})` : ''}.`,
       fix: 'Make links and buttons at least 44 px tall on phones, with some space between them.',
       severity: ratio > 0.3 ? 'high' : 'medium',

@@ -48,8 +48,23 @@ const BAD_ROUTES: Record<string, Handler> = {
   '/js/widgets.js': async (_req, res) => {
     await new Promise((r) => setTimeout(r, 800));
     res.writeHead(200, { 'content-type': 'text/javascript' });
-    // Busy loop to make the main thread visibly blocked.
-    res.end('(function(){var t=Date.now();while(Date.now()-t<450){}})();');
+    // A typical pile of widgets: blocks the main thread while parsing, again
+    // after load, and pushes the page down with a late banner (layout shift).
+    res.end(
+      [
+        'function busy(ms){var t=Date.now();while(Date.now()-t<ms){}}',
+        'busy(200);',
+        'addEventListener("load",function(){',
+        '  setTimeout(function(){busy(300);},50);',
+        '  setTimeout(function(){busy(300);',
+        '    var b=document.createElement("div");',
+        '    b.style.cssText="height:90px;background:#222;color:#eee;padding:8px";',
+        '    b.textContent="We use cookies!!! Click OK";',
+        '    document.body.insertBefore(b,document.body.firstChild);',
+        '  },400);',
+        '});',
+      ].join(';'),
+    );
   },
 };
 
