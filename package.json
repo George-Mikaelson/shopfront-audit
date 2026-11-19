@@ -55,7 +55,8 @@
     "format": "prettier --write .",
     "demo": "node scripts/build-demo.ts",
     "fixtures:serve": "node scripts/serve-fixtures.ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "axe-core": "^4.14.1",

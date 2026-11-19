@@ -32,7 +32,7 @@ Example reports, generated from the fictional test sites in this repository:
 Requires Node.js 22.19 or newer (24 recommended).
 
 ```sh
-npm install -g shopfront-audit
+npm install -g github:George-Mikaelson/shopfront-audit
 npx playwright install chromium
 ```
 
